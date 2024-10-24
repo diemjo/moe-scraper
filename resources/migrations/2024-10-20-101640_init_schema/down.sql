@@ -1,0 +1,9 @@
+DROP TABLE melonbooks_skip_product_artist;
+DROP TABLE melonbooks_skip_product;
+DROP TABLE melonbooks_product_tag;
+DROP TABLE melonbooks_tag;
+DROP TABLE melonbooks_product_flag;
+DROP TABLE melonbooks_flag;
+DROP TABLE melonbooks_product_artist;
+DROP TABLE melonbooks_artist;
+DROP TABLE melonbooks_product;
