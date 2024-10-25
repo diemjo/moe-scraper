@@ -37,6 +37,7 @@ impl Product {
     pub fn category(&self) -> &str { &self.category }
     pub fn tags(&self) -> &[String] { &self.tags }
     pub fn flags(&self) -> &[String] { &self.flags }
+    pub fn price(&self) -> Option<&str> { self.price.as_deref() }
     pub fn availability(&self) -> Availability { self.availability.clone() }
 }
 
