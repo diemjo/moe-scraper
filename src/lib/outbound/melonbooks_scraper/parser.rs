@@ -1,5 +1,6 @@
 use crate::domain::melonbooks::models::availability::Availability;
 use crate::outbound::melonbooks_scraper::{ProductData, PRODUCT_URL};
+use itertools::Itertools;
 use regex::Regex;
 use select::document::Document;
 use select::node::Node;
@@ -62,6 +63,7 @@ fn parse_product_flags(item_page: Node) -> Result<Vec<String>, ParseError> {
         .ok_or_else(|| ParseError::ProductItemHeaderNotFound)?;
     let tags = header.find(Class("notes-red"))
         .map(|n| n.text())
+        .unique()
         .collect::<Vec<_>>();
     Ok(tags)
 }
@@ -71,6 +73,7 @@ fn parse_product_tags(item_page: Node) -> Result<Vec<String>, ParseError> {
         .ok_or_else(|| ParseError::ProductTagListNotFound)?;
     let tags = tag_list.find(Name("a"))
         .map(|n| n.text().strip_prefix('#').map(|t| t.to_owned()).unwrap_or_else(|| n.text()))
+        .unique()
         .collect::<Vec<_>>();
     Ok(tags)
 }
@@ -129,6 +132,7 @@ fn parse_product_artists(item_page: Node) -> Result<Vec<String>, ParseError> {
     let artists = row.find(Name("a"))
         .filter(|a| a.attr("href").unwrap_or("#") != "#")
         .map(|a| a.text())
+        .unique()
         .collect::<Vec<_>>();
     Ok(artists)
 }
