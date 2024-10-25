@@ -8,6 +8,15 @@ pub enum Availability {
     Deleted,
 }
 
+impl Availability {
+    pub fn is_available(&self) -> bool {
+        match self { 
+            Availability::Available | Availability::Preorder => true,
+            Availability::NotAvailable | Availability::Deleted => false,
+        }
+    }
+}
+
 impl TryFrom<String> for Availability {
     type Error = strum::ParseError;
 

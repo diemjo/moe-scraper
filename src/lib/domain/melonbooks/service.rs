@@ -61,7 +61,7 @@ where
             info!("scrape available products for '{}'", artist.name());
             let products = self.repo.get_melonbooks_products_by_artist(artist.id()).await?;
             let (available_products, unavailable_products) = products.iter()
-                .partition::<Vec<_>, _>(|p| p.availability() == Availability::Available);
+                .partition::<Vec<_>, _>(|p| p.availability().is_available());
             let available_urls = available_products.iter().map(|p| p.url()).collect::<BTreeSet<_>>();
             let unavailable_urls = unavailable_products.iter().map(|p| p.url()).collect::<BTreeSet<_>>();
             let skip_urls = self.repo.get_melonbooks_skipping_urls().await?.into_iter().collect::<BTreeSet<_>>();
