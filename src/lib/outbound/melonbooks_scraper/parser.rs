@@ -45,7 +45,7 @@ fn parse_product_title(item_page: Node) -> Result<String, ParseError> {
         .ok_or_else(|| ParseError::ProductItemHeaderNotFound)?;
     let page_header = header.find(Class("page-header")).next()
         .ok_or_else(|| ParseError::ProductPageHeaderNotFound)?;
-    let title = page_header.text();
+    let title = page_header.text().trim().to_owned();
     Ok(title)
 }
 
@@ -54,7 +54,7 @@ fn parse_product_category(item_page: Node) -> Result<String, ParseError> {
         .ok_or_else(|| ParseError::ProductItemHeaderNotFound)?;
     let category_span = header.find(Class("notes-analog")).next()
         .ok_or_else(|| ParseError::ProductCategoryNotFound)?;
-    let category = category_span.text();
+    let category = category_span.text().trim().to_owned();
     Ok(category)
 }
 
@@ -62,7 +62,7 @@ fn parse_product_flags(item_page: Node) -> Result<Vec<String>, ParseError> {
     let header = item_page.find(Class("item-header")).next()
         .ok_or_else(|| ParseError::ProductItemHeaderNotFound)?;
     let tags = header.find(Class("notes-red"))
-        .map(|n| n.text())
+        .map(|n| n.text().trim().to_owned())
         .unique()
         .collect::<Vec<_>>();
     Ok(tags)
@@ -72,7 +72,7 @@ fn parse_product_tags(item_page: Node) -> Result<Vec<String>, ParseError> {
     let tag_list = item_page.find(Class("item-detail2").child(Class("mt6"))).next()
         .ok_or_else(|| ParseError::ProductTagListNotFound)?;
     let tags = tag_list.find(Name("a"))
-        .map(|n| n.text().strip_prefix('#').map(|t| t.to_owned()).unwrap_or_else(|| n.text()))
+        .map(|n| n.text().strip_prefix('#').map(|t| t.trim().to_owned()).unwrap_or_else(|| n.text().trim().to_owned()))
         .unique()
         .collect::<Vec<_>>();
     Ok(tags)
@@ -89,9 +89,7 @@ fn parse_product_price(item_page: Node) -> Result<Option<String>, ParseError> {
 // optional
 // https://www.melonbooks.co.jp/detail/detail.php?product_id=2587862
 fn parse_product_circle(item_page: Node) -> Result<Option<String>, ParseError> {
-    let table_wrapper = item_page.find(Class("table-wrapper")).next()
-        .ok_or_else(|| ParseError::ProductTableNotFound)?;
-    let row = table_wrapper.find(Name("tr"))
+    let row = item_page.find(Class("item-detail").descendant(Class("table-wrapper")))
         .filter(|tr|
             tr.find(Name("th"))
                 .filter(|th| vec!["サークル名"].contains(&th.text().as_str()))
@@ -119,9 +117,7 @@ fn parse_product_circle(item_page: Node) -> Result<Option<String>, ParseError> {
 }
 
 fn parse_product_artists(item_page: Node) -> Result<Vec<String>, ParseError> {
-    let table_wrapper = item_page.find(Class("table-wrapper")).next()
-        .ok_or_else(|| ParseError::ProductTableNotFound)?;
-    let row = table_wrapper.find(Name("tr"))
+    let row = item_page.find(Class("item-detail").descendant(Class("table-wrapper")))
         .filter(|tr|
             tr.find(Name("th"))
                 .filter(|th| vec!["作家名", "アーティスト"].contains(&th.text().as_str()))
@@ -131,7 +127,7 @@ fn parse_product_artists(item_page: Node) -> Result<Vec<String>, ParseError> {
         .ok_or_else(|| ParseError::ProductArtistRowNotFound)?;
     let artists = row.find(Name("a"))
         .filter(|a| a.attr("href").unwrap_or("#") != "#")
-        .map(|a| a.text())
+        .map(|a| a.text().trim().to_owned())
         .unique()
         .collect::<Vec<_>>();
     Ok(artists)
@@ -218,6 +214,13 @@ mod test {
         let details = parse_product_details(document).unwrap();
         println!("{:?}", details);
     }
+    
+    #[test]
+    fn test_parse_product_with_no_artist() {
+        let document = get_music_document();
+        let details = parse_product_details(document).unwrap();
+        println!("{:?}", details);
+    }
 
     fn get_list_document() -> Document {
         let path = get_test_list_html_path();
@@ -247,6 +250,22 @@ mod test {
             concat!(
                 env!("CARGO_MANIFEST_DIR"),
                 "/test-data/product-details.html"
+            )
+        )
+    }
+    
+    fn get_music_document() -> Document {
+        let path = get_test_music_html_path();
+        let document = Document::from(path);
+        document
+    }
+
+    // https://www.melonbooks.co.jp/detail/detail.php?product_id=2395046
+    fn get_test_music_html_path() -> &'static str {
+        include_str!(
+            concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/test-data/product-music.html"
             )
         )
     }
