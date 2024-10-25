@@ -7,6 +7,7 @@ use moe_scraper::outbound::melonbooks_scraper::MelonbooksScraperImpl;
 use moe_scraper::outbound::sqlite::Sqlite;
 use std::env;
 use std::sync::Arc;
+use chrono::Local;
 use tokio_cron_scheduler::{Job, JobScheduler};
 
 const OPENSSL_CONFIG_ENV_VAR: &str = "OPENSSL_CONF";
@@ -37,7 +38,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 async fn schedule_melonbooks<S: MelonbooksService>(scheduler: &JobScheduler, schedule: &str, service: Arc<S>) -> Result<(), Box<dyn std::error::Error>> {
     scheduler.add(
-        Job::new_async(schedule, move |_uuid, _l| {
+        Job::new_async_tz(schedule, Local, move |_uuid, _l| {
             Box::pin({
                 let service = service.clone();
                 async move {
