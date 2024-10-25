@@ -89,7 +89,7 @@ fn parse_product_price(item_page: Node) -> Result<Option<String>, ParseError> {
 // optional
 // https://www.melonbooks.co.jp/detail/detail.php?product_id=2587862
 fn parse_product_circle(item_page: Node) -> Result<Option<String>, ParseError> {
-    let row = item_page.find(Class("item-detail").descendant(Class("table-wrapper")))
+    let row = item_page.find(Class("item-detail").descendant(Class("table-wrapper")).descendant(Name("tr")))
         .filter(|tr|
             tr.find(Name("th"))
                 .filter(|th| vec!["サークル名"].contains(&th.text().as_str()))
@@ -117,7 +117,7 @@ fn parse_product_circle(item_page: Node) -> Result<Option<String>, ParseError> {
 }
 
 fn parse_product_artists(item_page: Node) -> Result<Vec<String>, ParseError> {
-    let row = item_page.find(Class("item-detail").descendant(Class("table-wrapper")))
+    let row = item_page.find(Class("item-detail").descendant(Class("table-wrapper")).descendant(Name("tr")))
         .filter(|tr|
             tr.find(Name("th"))
                 .filter(|th| vec!["作家名", "アーティスト"].contains(&th.text().as_str()))
