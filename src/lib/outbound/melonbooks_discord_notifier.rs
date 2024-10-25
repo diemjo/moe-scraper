@@ -53,7 +53,7 @@ impl MelonbooksDiscordNotifier {
 
 fn product_description(product: &Product) -> String {
     match product.price() { 
-        Some(price) => format!("{} [{}] - {}", product.category(), product.flags().join(" "), price),
+        Some(price) => format!("{} [{}]\n{}", product.category(), product.flags().join(" "), price),
         None => format!("{} [{}]", product.category(), product.flags().join(" "))
     }
 }
