@@ -38,7 +38,8 @@ impl MelonbooksDiscordNotifier {
                     message = message
                         .embed(|embed| embed
                             .title(product.title())
-                            .description(product.url())
+                            .url(product.url())
+                            .description(&product_description(&product))
                             .thumbnail(product.image_url())
                         );
                 }
@@ -47,6 +48,13 @@ impl MelonbooksDiscordNotifier {
             tokio::time::sleep(core::time::Duration::from_secs(1)).await;
         }
         Ok(())
+    }
+}
+
+fn product_description(product: &Product) -> String {
+    match product.price() { 
+        Some(price) => format!("{} [{}] - {}", product.category(), product.flags().join(" "), price),
+        None => format!("{} [{}]", product.category(), product.flags().join(" "))
     }
 }
 
