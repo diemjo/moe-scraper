@@ -18,19 +18,18 @@ sites:
     # Discord webhook api keys for notifications
     # optional, default: None
     discord:
-      melonbooks:
-        # webhook key
-        # mandatory
-        apikey: "abcxyz123"
-        # name displayed as author in the messages
-        # optional, default: "{site}-Scraper"
-        username: "Melonbooks"
-        # image to display as the avatar of the messages
-        # optional, default: None
-        imageurl: "https://my-website.cool-image.png"
-        # how many products to send at a time
-        # optional, default: 10
-        chunksize: 10
+      # webhook key
+      # mandatory
+      apikey: "abcxyz123"
+      # name displayed as author in the messages
+      # optional, default: "{site}-Scraper"
+      username: "Melonbooks"
+      # image to display as the avatar of the messages
+      # optional, default: None
+      imageurl: "https://my-website.cool-image.png"
+      # how many products to send at a time
+      # optional, default: 10
+      chunksize: 10
 
 # Overwrite the openssl config file location
 # optional, default: None
