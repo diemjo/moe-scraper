@@ -5,6 +5,7 @@ use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use r2d2::PooledConnection;
 use std::time::Duration;
 use diesel::connection::SimpleConnection;
+use log::info;
 
 mod melonbooks;
 mod schema;
@@ -34,10 +35,12 @@ impl Sqlite {
     }
 
     pub fn setup(&self) -> Result<(), anyhow::Error> {
+        info!("setting up database");
         let mut connection = self.pool.get()?;
         connection.batch_execute("PRAGMA foreign_keys = ON;")?;
         connection.run_pending_migrations(MIGRATIONS)
             .map_err(|e| anyhow!(e))?;
+        info!("database up to date");
         Ok(())
     }
     
