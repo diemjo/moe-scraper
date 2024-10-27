@@ -15,7 +15,7 @@ path = "src/bin/server/main.rs"
 anyhow = { version = "1.0.89" }
 axum = { version = "0.7.7" }
 chrono = { version = "0.4.38" }
-derivative = { version = "2.2.0" }
+debug-ignore = { version = "1.0.5" }
 diesel = { version = "2.2.4", features = ["chrono", "r2d2", "sqlite", "returning_clauses_for_sqlite_3_35"] }
 diesel_migrations = { version = "2.2.0", features = ["sqlite"] }
 env_logger = { version = "0.11.5" }

@@ -1,3 +1,4 @@
+use debug_ignore::DebugIgnore;
 use figment::providers::{Env, Format, Yaml};
 use figment::Figment;
 use serde::{Deserialize, Serialize};
@@ -10,18 +11,18 @@ use thiserror::Error;
 pub struct ServerConfiguration {
     pub db_path: PathBuf,
     pub site_settings: HashMap<Site, SiteSettings>,
-    pub discord_settings: HashMap<Site, DiscordSettings>,
     pub openssl_config: Option<PathBuf>
 }
 
 #[derive(Debug, Clone)]
 pub struct SiteSettings {
-    pub schedule: String,
+    pub schedule: Option<String>,
+    pub discord_settings: Option<DiscordSettings>,
 }
 
 #[derive(Debug, Clone)]
 pub struct DiscordSettings {
-    pub api_key: String,
+    pub api_key: DebugIgnore<String>,
     pub image_url: Option<String>,
     pub username: String,
     pub chunk_size: u32
@@ -52,13 +53,13 @@ impl ServerConfiguration {
 pub struct ServerConfigurationOptions {
     pub dbpath: Option<PathBuf>,
     pub sites: Option<HashMap<Site, SiteSettingsOptions>>,
-    pub discord: Option<HashMap<Site, DiscordSettingsOptions>>,
     pub opensslconfig: Option<PathBuf>
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct SiteSettingsOptions {
-    schedule: String,
+pub struct SiteSettingsOptions {
+    schedule: Option<String>,
+    discord: Option<DiscordSettingsOptions>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -74,9 +75,6 @@ impl ServerConfigurationOptions {
         ServerConfiguration {
             db_path: self.dbpath.unwrap_or_else(|| PathBuf::from("/data/moe-scraper.sqlite")),
             site_settings: self.sites
-                .map(|map| map.into_iter().map(|(k, v)| (k.to_owned(), v.into_actual())).collect())
-                .unwrap_or_else(|| HashMap::new()),
-            discord_settings: self.discord
                 .map(|map| map.into_iter().map(|(k, v)| (k.to_owned(), v.into_actual(&k))).collect())
                 .unwrap_or_else(|| HashMap::new()),
             openssl_config: self.opensslconfig,
@@ -85,15 +83,18 @@ impl ServerConfigurationOptions {
 }
 
 impl SiteSettingsOptions {
-    pub fn into_actual(self) -> SiteSettings {
-        SiteSettings { schedule: self.schedule }
+    pub fn into_actual(self, site: &Site) -> SiteSettings {
+        SiteSettings {
+            schedule: self.schedule,
+            discord_settings: self.discord.map(|ds| ds.into_actual(site))
+        }
     }
 }
 
 impl DiscordSettingsOptions {
     fn into_actual(self, site: &Site) -> DiscordSettings {
         DiscordSettings {
-            api_key: self.apikey,
+            api_key: self.apikey.into(),
             image_url: self.imageurl,
             username: self.username.unwrap_or_else(|| site.to_string() + "-Scraper"),
             chunk_size: self.chunksize.unwrap_or(10)

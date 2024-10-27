@@ -21,16 +21,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if let Some(openssl_config_file) = &config.openssl_config {
         env::set_var(OPENSSL_CONFIG_ENV_VAR, openssl_config_file)
     }
-    info!("using sites {:?}", config.site_settings.keys());
+    info!("using config:\n{:#?}", config);
     let db = Sqlite::new(config.db_path.as_path().to_str().unwrap())?;
     db.setup()?;
     let scheduler = JobScheduler::new().await?;
     if let Some(melonbooks_settings) = config.site_settings.get(&Site::Melonbooks) {
-        let discord_settings = config.discord_settings.get(&Site::Melonbooks).cloned();
+        let discord_settings = melonbooks_settings.discord_settings.clone();
         let notifier = MelonbooksDiscordNotifier::new(discord_settings);
         let scraper = MelonbooksScraperImpl::new()?;
         let service = Arc::new(MelonbooksServiceImpl::new(db, notifier, scraper));
-        schedule_melonbooks(&scheduler, &melonbooks_settings.schedule, service.clone()).await?;
+        if let Some(schedule) = melonbooks_settings.schedule.as_ref() {
+            schedule_melonbooks(&scheduler, schedule, service.clone()).await?;
+        }
     }
     scheduler.start().await?;
     loop {}

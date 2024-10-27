@@ -2,11 +2,9 @@ use crate::domain::melonbooks::models::artist::{Artist, GetArtistsError};
 use crate::domain::melonbooks::models::availability::Availability;
 use crate::outbound::melonbooks_scraper::ParseError;
 use chrono::{DateTime, Utc};
-use derivative::Derivative;
 use thiserror::Error;
 
-#[derive(Debug, Derivative)]
-#[derivative(PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Product {
     id: i32,
     date_added: DateTime<Utc>,
