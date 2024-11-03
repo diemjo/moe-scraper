@@ -1,6 +1,7 @@
 :root {
     --mobile-breakpoint: 500px;
     --min-product-row-width: 450px;
+    --min-mobile-product-row-width: 300px;
 }
 
 .navy {
@@ -80,19 +81,39 @@ body {
     justify-content: center;
 }
 
-.product-item-date {
-    grid-column: span 2;
-}
-
-.product-item-title {
+.product-item-wide {
     grid-column: span 2;
 }
 
 .product-item-artists {
-    grid-column: span 2;
+    word-break: keep-all;
+}
+
+.product-item-flags {
+    word-break: keep-all;
+}
+
+.product-item-date {
+    font-size: 0.8rem;
 }
 
 .product-image {
     max-width: 200px;
     max-height: 250px;
+}
+
+/* use mobile breakpoing from above */
+@media screen and (max-width: 500px) {
+    .product-grid-container {
+        grid-template-columns: minmax(var(--min-mobile-product-row-width), 1fr);
+    }
+
+    .product-grid-item {
+        grid-template-columns: 50% 50%;
+    }
+
+    .product-image-item {
+        grid-row: 1;
+        grid-column: span 2;
+    }
 }

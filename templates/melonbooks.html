@@ -42,12 +42,7 @@
                 <img class="product-image" loading="lazy" src="{{ product.image_url() }}&height=250" alt="{{ product.title() }}">
             </a>
         </div>
-        <div class="product-item-date">
-            <label for="product-date" class="product-info-label">Date Added</label>
-            <a id="product-date" class="product-info-value">
-                {{ Self::format_date(product.date_added()) }}</a>
-        </div>
-        <div class="product-item-title">
+        <div class="product-item-wide product-item-title">
             <label for="product-title" class="product-info-label">Title</label>
             <a id="product-title" class="product-info-value">
                 {{ product.title() }}</a>
@@ -61,7 +56,11 @@
                     {{ artist.name() }}</a>
                 {% endfor %}
             </div>
-
+        </div>
+        <div class=" product-item-date">
+            <label for="product-date" class="product-info-label">Date Added</label>
+            <a id="product-date" class="product-info-value">
+                {{ Self::format_date(product.date_added()) }}</a>
         </div>
         <div class="product-item-category">
             <label for="product-category" class="product-info-label">Category</label>
