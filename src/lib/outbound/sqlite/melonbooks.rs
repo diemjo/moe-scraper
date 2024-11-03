@@ -153,6 +153,7 @@ impl Sqlite {
     ) -> Result<Vec<ProductRow>, anyhow::Error> {
         let products = product_dsl::melonbooks_product
             .select(ProductRow::as_select())
+            .order_by(product_dsl::date_added.desc())
             .get_results(connection)
             .with_context(|| "cannot get products")?;
         Ok(products)
@@ -167,6 +168,7 @@ impl Sqlite {
             .inner_join(product_dsl::melonbooks_product)
             .select(ProductRow::as_select())
             .filter(product_artist_dsl::artist_id.eq(artist_id))
+            .order_by(product_dsl::date_added.desc())
             .get_results(connection)
             .with_context(|| format!("cannot get products by artist with id {}", artist_id))?;
         Ok(products)
