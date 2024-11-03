@@ -4,6 +4,18 @@
 <body id="body">
 {% include "header.html" %}
 <h1>Melonbooks</h1>
+<script>
+    document.getElementById("body").onscroll = function myFunction() {
+        const scrollPercent = document.scrollingElement.scrollTop/(document.body.scrollHeight - window.innerHeight);
+        const target = document.getElementById("mizugi-parallax");
+        const imageWidth = 1099;
+        const imageHeight = 1200;
+        const aspectRatio = imageHeight/imageWidth;
+        const xvalue = "center";
+        const yvalue = (aspectRatio * window.innerWidth - window.innerHeight) * scrollPercent;
+        target.style.backgroundPosition = xvalue + " " + -yvalue + "px";
+    }
+</script>
 <div class="artist-follow">
     <form
         action="/melonbooks/artist"
@@ -34,6 +46,7 @@
     </form>
     {% endif %}
 </div>
+<div id="mizugi-parallax"></div>
 <div class="product-grid-container">
     {% for product in products %}
     <div class="product-grid-item">

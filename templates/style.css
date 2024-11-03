@@ -26,6 +26,20 @@ body {
     height: 100%;
 }
 
+#mizugi-parallax {
+    background-image: url("https://img3.gelbooru.com/images/3e/20/3e207bc1b8c81b17c3614cf02da254f6.png");
+    background-position: top center;
+    background-attachment: scroll;
+    background-size: cover;
+    height: 100vh;
+    width: 100%;
+    position: fixed;
+    z-index: -1;
+    bottom: 0;
+    right: 0;
+    opacity: 30%;
+}
+
 .artist-selection {
     direction: ltr;
     padding: 0.3rem;
