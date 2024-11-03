@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use thiserror::Error;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Artist {
     id: i32,
     date_added: DateTime<Utc>,
@@ -47,8 +47,8 @@ pub enum FollowArtistError {
 
 #[derive(Debug, Error)]
 pub enum UnfollowArtistError {
-    #[error("unknown artist '{name}'")]
-    UnknownArtist{ name: String },
+    #[error("unknown artist with id '{id}'")]
+    UnknownArtist{ id: i32 },
     #[error("artist '{name}' not followed")]
     ArtistNotFollowed{ name: String },
     #[error(transparent)]

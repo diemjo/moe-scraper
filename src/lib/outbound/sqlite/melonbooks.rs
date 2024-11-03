@@ -1,6 +1,6 @@
 use crate::domain::melonbooks::models::artist::{Artist, ArtistArgs, FollowArtistError, GetArtistsError, UnfollowArtistError};
 use crate::domain::melonbooks::models::availability::Availability;
-use crate::domain::melonbooks::models::product::{AddSkippingUrlError, AddTitleSkippSequenceError, CreateProductArgs, CreateProductError, DeleteTitleSkippSequenceError, GetProductsError, GetSkippingUrlsError, GetTitleSkippSequencesError, Product, UpdateProductArgs, UpdateProductError};
+use crate::domain::melonbooks::models::product::{AddSkippingUrlError, AddTitleSkipSequenceError, CreateProductArgs, CreateProductError, DeleteTitleSkipSequenceError, GetProductsError, GetSkippingUrlsError, GetTitleSkipSequencesError, Product, UpdateProductArgs, UpdateProductError};
 use crate::domain::melonbooks::ports::MelonbooksRepository;
 use crate::outbound::sqlite::melonbooks::models::{ArtistRow, ArtistRowInsert, CategoryRow, CategoryRowInsert, FlagRow, FlagRowInsert, ProductRow, ProductRowInsert, SkipProductArtistRowInsert, SkipProductRow, SkipProductRowInsert, TagRow, TagRowInsert, TitleSkipSequenceRow, TitleSkipSequenceRowInsert};
 use crate::outbound::sqlite::{schema, Sqlite};
@@ -25,6 +25,20 @@ use schema::melonbooks_title_skip_sequence::dsl as title_skip_dsl;
 mod models;
 
 impl Sqlite {
+    fn get_artist_row_by_id(
+        &self,
+        connection: &mut PooledConnection<ConnectionManager<SqliteConnection>>,
+        artist_id: i32
+    ) -> Result<Option<ArtistRow>, anyhow::Error> {
+        let artist = artist_dsl::melonbooks_artist
+            .select(ArtistRow::as_select())
+            .filter(artist_dsl::id.eq(artist_id))
+            .first(connection)
+            .optional()
+            .with_context(|| format!("cannot get artist with id '{}'", artist_id))?;
+        Ok(artist)
+    }
+
     fn get_artist_row_by_name(
         &self,
         connection: &mut PooledConnection<ConnectionManager<SqliteConnection>>,
@@ -449,9 +463,9 @@ impl MelonbooksRepository for Sqlite {
         Ok(())
     }
 
-    async fn unfollow_melonbooks_artist(&self, args: &ArtistArgs) -> Result<(), UnfollowArtistError> {
+    async fn unfollow_melonbooks_artist(&self, artist_id: i32) -> Result<(), UnfollowArtistError> {
         let mut connection = self.get_connection()?;
-        let artist = self.get_artist_row_by_name(&mut connection, args.name())?;
+        let artist = self.get_artist_row_by_id(&mut connection, artist_id)?;
         match artist {
             Some(artist) => {
                 if artist.following {
@@ -461,7 +475,7 @@ impl MelonbooksRepository for Sqlite {
                 }
             },
             None => {
-                return Err(UnfollowArtistError::UnknownArtist { name: args.name().to_owned() });
+                return Err(UnfollowArtistError::UnknownArtist { id: artist_id });
             }
         }
         Ok(())
@@ -583,19 +597,19 @@ impl MelonbooksRepository for Sqlite {
         Ok(urls)
     }
 
-    async fn add_melonbooks_title_skip_sequence(&self, sequence: &str) -> Result<(), AddTitleSkippSequenceError> {
+    async fn add_melonbooks_title_skip_sequence(&self, sequence: &str) -> Result<(), AddTitleSkipSequenceError> {
         let mut connection = self.get_connection()?;
         self.add_title_skip_sequence(&mut connection, sequence)?;
         Ok(())
     }
 
-    async fn delete_melonbooks_title_skip_sequence(&self, sequence: &str) -> Result<(), DeleteTitleSkippSequenceError> {
+    async fn delete_melonbooks_title_skip_sequence(&self, sequence: &str) -> Result<(), DeleteTitleSkipSequenceError> {
         let mut connection = self.get_connection()?;
         self.delete_title_skip_sequence(&mut connection, sequence)?;
         Ok(())
     }
 
-    async fn get_melonbooks_title_skip_sequences(&self) -> Result<Vec<String>, GetTitleSkippSequencesError> {
+    async fn get_melonbooks_title_skip_sequences(&self) -> Result<Vec<String>, GetTitleSkipSequencesError> {
         let mut connection = self.get_connection()?;
         let sequence_rows = self.get_title_skip_sequences(&mut connection)?;
         let sequences = sequence_rows.into_iter().map(|s| s.sequence).collect();
@@ -631,7 +645,8 @@ mod test {
         let db = Sqlite::new_in_memory();
         db.setup().unwrap();
         db.follow_melonbooks_artist(&artist_args()).await.unwrap();
-        db.unfollow_melonbooks_artist(&artist_args()).await.unwrap();
+        let artist = db.get_melonbooks_artists().await.unwrap().into_iter().find(|a| a.name().eq(artist_args().name())).unwrap();
+        db.unfollow_melonbooks_artist(artist.id()).await.unwrap();
 
         let artists = db.get_melonbooks_artists().await.unwrap();
         assert_eq!(artists.len(), 1);
@@ -647,7 +662,8 @@ mod test {
         db.setup().unwrap();
         db.follow_melonbooks_artist(&artist_args()).await.unwrap();
         db.follow_melonbooks_artist(&artist_args2()).await.unwrap();
-        db.unfollow_melonbooks_artist(&artist_args2()).await.unwrap();
+        let artist2 = db.get_melonbooks_artists().await.unwrap().into_iter().find(|a| a.name().eq(artist_args2().name())).unwrap();
+        db.unfollow_melonbooks_artist(artist2.id()).await.unwrap();
 
         let artists = db.get_melonbooks_artists().await.unwrap();
         assert_eq!(artists.len(), 2);

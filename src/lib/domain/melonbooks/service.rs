@@ -1,6 +1,6 @@
 use crate::domain::melonbooks::models::artist::{Artist, ArtistArgs, FollowArtistError, GetArtistsError, UnfollowArtistError};
 use crate::domain::melonbooks::models::availability::Availability;
-use crate::domain::melonbooks::models::product::{CreateProductArgs, GetProductsError, Product, ScrapeProductsError, UpdateProductArgs};
+use crate::domain::melonbooks::models::product::{AddTitleSkipSequenceError, CreateProductArgs, DeleteTitleSkipSequenceError, GetProductsError, GetTitleSkipSequencesError, Product, ScrapeProductsError, UpdateProductArgs};
 use crate::domain::melonbooks::ports::{MelonbooksNotifier, MelonbooksRepository, MelonbooksScraper, MelonbooksService};
 use log::info;
 use std::collections::BTreeSet;
@@ -39,9 +39,9 @@ where
         self.repo.follow_melonbooks_artist(artist_args).await
     }
 
-    async fn unfollow_artist(&self, artist_args: &ArtistArgs) -> Result<(), UnfollowArtistError> {
-        info!("unfollow artist '{}'", artist_args.name());
-        self.repo.unfollow_melonbooks_artist(artist_args).await
+    async fn unfollow_artist(&self, artist_id: i32) -> Result<(), UnfollowArtistError> {
+        info!("unfollow artist with id '{}'", artist_id);
+        self.repo.unfollow_melonbooks_artist(artist_id).await
     }
 
     async fn get_artists(&self) -> Result<Vec<Artist>, GetArtistsError> {
@@ -49,9 +49,39 @@ where
         self.repo.get_melonbooks_artists().await
     }
 
+    async fn get_followed_artists(&self) -> Result<Vec<Artist>, GetArtistsError> {
+        info!("get followed artists");
+        let artists = self.repo.get_melonbooks_artists().await?;
+        Ok(
+            artists.into_iter()
+                .filter(|a| a.following())
+                .collect()
+        )
+    }
+
     async fn get_products(&self) -> Result<Vec<Product>, GetProductsError> {
         info!("get products");
         self.repo.get_melonbooks_products().await
+    }
+
+    async fn get_products_by_artist(&self, artist_id: i32) -> Result<Vec<Product>, GetProductsError> {
+        info!("get products by artist with id '{}'", artist_id);
+        self.repo.get_melonbooks_products_by_artist(artist_id).await
+    }
+
+    async fn get_title_skip_sequences(&self) -> Result<Vec<String>, GetTitleSkipSequencesError> {
+        info!("get title skip sequences");
+        self.repo.get_melonbooks_title_skip_sequences().await
+    }
+
+    async fn add_title_skip_sequence(&self, sequence: &str) -> Result<(), AddTitleSkipSequenceError> {
+        info!("add title skip sequences");
+        self.repo.add_melonbooks_title_skip_sequence(sequence).await
+    }
+
+    async fn delete_title_skip_sequence(&self, sequence: &str) -> Result<(), DeleteTitleSkipSequenceError> {
+        info!("delete title skip sequences");
+        self.repo.delete_melonbooks_title_skip_sequence(sequence).await
     }
 
     async fn scrape_available_products(&self) -> Result<(), ScrapeProductsError> {

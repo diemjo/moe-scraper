@@ -171,19 +171,19 @@ pub enum AddSkippingUrlError {
 }
 
 #[derive(Debug, Error)]
-pub enum AddTitleSkippSequenceError {
+pub enum AddTitleSkipSequenceError {
     #[error(transparent)]
     Unknown(#[from] anyhow::Error),
 }
 
 #[derive(Debug, Error)]
-pub enum DeleteTitleSkippSequenceError {
+pub enum DeleteTitleSkipSequenceError {
     #[error(transparent)]
     Unknown(#[from] anyhow::Error),
 }
 
 #[derive(Debug, Error)]
-pub enum GetTitleSkippSequencesError {
+pub enum GetTitleSkipSequencesError {
     #[error(transparent)]
     Unknown(#[from] anyhow::Error),
 }
