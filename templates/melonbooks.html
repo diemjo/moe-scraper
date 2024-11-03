@@ -4,35 +4,10 @@
 <body id="body">
 {% include "header.html" %}
 <h1>Melonbooks</h1>
-<div class="artist-follow">
-    <form
-        action="/melonbooks/artist"
-        method="post"
-    >
-        <label class="form-field-text-label" for="artist-follow-name">Artist</label>
-        <input class="form-field-text-input" id="artist-follow-name" type="text" name="name">
-        <input class="form-field-submit-button" type="submit" name="artist-follow" value="Follow">
-    </form>
-</div>
-<div class="artist-selection">
-    <label for="selected-artist">
-        Select artist
-    </label>
-    <select name="selected-artist" id="selected-artist" onchange="this.options[this.selectedIndex].id && (window.location = '/melonbooks?selected_artist=' + this.options[this.selectedIndex].id) || (window.location = '/melonbooks')">
-        <option {% if selected_artist.is_none() %}selected{% endif %}>-</option>
-        {% for artist in artists %}
-        <option id="{{ artist.id() }}" {% if Some(artist) == selected_artist.as_ref().as_ref() %}selected{% endif %}>{{ artist.name() }}</option>
-        {% endfor %}
-    </select>
-    {% if selected_artist.is_some() %}
-    <form
-        action="/melonbooks/artist/delete/id/{{ selected_artist.as_ref().unwrap().id() }}"
-        method="post"
-        onsubmit="return confirm('Are you sure you want to unfollow this artist? All products will be removed.');"
-    >
-        <input type="submit" value="Unfollow">
-    </form>
-    {% endif %}
+
+<div class="product-configurations">
+    {% include "melonbooks-artist-config.html" %}
+    {% include "melonbooks-title-skip-config.html" %}
 </div>
 <div class="product-grid-container">
     {% for product in products %}

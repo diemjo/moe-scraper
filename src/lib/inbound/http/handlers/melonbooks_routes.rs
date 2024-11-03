@@ -1,5 +1,5 @@
 use crate::domain::melonbooks::models::artist::{Artist, ArtistArgs, FollowArtistError, GetArtistsError, UnfollowArtistError};
-use crate::domain::melonbooks::models::product::{GetProductsError, GetTitleSkipSequencesError, Product};
+use crate::domain::melonbooks::models::product::{AddTitleSkipSequenceError, DeleteTitleSkipSequenceError, GetProductsError, GetTitleSkipSequencesError, Product};
 use crate::domain::melonbooks::ports::MelonbooksService;
 use crate::inbound::http::AppState;
 use askama::Template;
@@ -81,8 +81,40 @@ pub async fn post_artist<MS: MelonbooksService>(State(state): State<AppState<MS>
     get_overview_response(state.melonbooks_service, None).await
 }
 
-pub async fn delete_artist<MS: MelonbooksService>(State(state): State<AppState<MS>>, Path(artist_id): Path<i32>) -> Response {
-    if let Err(e) = state.melonbooks_service.unfollow_artist(artist_id).await {
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct DeleteArtistForm {
+    selected_artist_id: i32
+}
+
+pub async fn delete_artist<MS: MelonbooksService>(State(state): State<AppState<MS>>, Form(input): Form<DeleteArtistForm>) -> Response {
+    if let Err(e) = state.melonbooks_service.unfollow_artist(input.selected_artist_id).await {
+        return e.into_response();
+    }
+    get_overview_response(state.melonbooks_service, None).await
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct AddTitleSkipSequenceForm {
+    title_skip_sequence: String
+}
+
+pub async fn post_title_skip_sequence<MS: MelonbooksService>(State(state): State<AppState<MS>>, Form(input): Form<AddTitleSkipSequenceForm>) -> Response {
+    if let Err(e) = state.melonbooks_service.add_title_skip_sequence(&input.title_skip_sequence).await {
+        return e.into_response();
+    }
+    get_overview_response(state.melonbooks_service, None).await
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct DeleteTitleSkipSequenceForm {
+    title_skip_sequence: String
+}
+
+pub async fn delete_title_skip_sequence<MS: MelonbooksService>(State(state): State<AppState<MS>>, Form(input): Form<DeleteTitleSkipSequenceForm>) -> Response {
+    if let Err(e) = state.melonbooks_service.delete_title_skip_sequence(&input.title_skip_sequence).await {
         return e.into_response();
     }
     get_overview_response(state.melonbooks_service, None).await
@@ -159,6 +191,22 @@ impl IntoResponse for GetTitleSkipSequencesError {
     fn into_response(self) -> Response {
         match self { 
             GetTitleSkipSequencesError::Unknown(e) => (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()).into_response(),
+        }
+    }
+}
+
+impl IntoResponse for AddTitleSkipSequenceError {
+    fn into_response(self) -> Response {
+        match self {
+            AddTitleSkipSequenceError::Unknown(e) => (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()).into_response(),
+        }
+    }
+}
+
+impl IntoResponse for DeleteTitleSkipSequenceError {
+    fn into_response(self) -> Response {
+        match self {
+            DeleteTitleSkipSequenceError::Unknown(e) => (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()).into_response(),
         }
     }
 }

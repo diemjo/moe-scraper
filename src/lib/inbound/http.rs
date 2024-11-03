@@ -58,7 +58,9 @@ fn melonbooks_routes<MS: MelonbooksService>() -> axum::Router<AppState<MS>> {
     axum::Router::new()
         .route("/", get(melonbooks_routes::get_overview::<MS>))
         .route("/artist", post(melonbooks_routes::post_artist::<MS>))
-        .route("/artist/delete/id/:artist_id", post(melonbooks_routes::delete_artist::<MS>))
+        .route("/artist/delete", post(melonbooks_routes::delete_artist::<MS>))
+        .route("/title-skip-sequence", post(melonbooks_routes::post_title_skip_sequence::<MS>))
+        .route("/title-skip-sequence/delete", post(melonbooks_routes::delete_title_skip_sequence::<MS>))
 }
 
 fn api_routes<MS: MelonbooksService>() -> axum::Router<AppState<MS>> {

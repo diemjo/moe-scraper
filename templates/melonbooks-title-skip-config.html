@@ -1,0 +1,27 @@
+<div class="title-skip-configuration">
+    <div class="title-skip-add">
+        <form
+                action="/melonbooks/title-skip-sequence"
+                method="post"
+        >
+            <label class="form-field-text-label" for="title-skip-sequence">Title skip sequence</label>
+            <input class="form-field-text-input" id="title-skip-sequence" type="text" name="title-skip-sequence">
+            <input class="form-field-submit-button" type="submit" name="title-skip-sequence-add" value="Add">
+        </form>
+    </div>
+    <div class="title-skip-selection">
+        {% if !skip_sequences.is_empty() %}
+        <form action="/melonbooks/title-skip-sequence/delete" method="post">
+            <label class="form-field-select-label" for="selected-title-skip-sequence">
+                Select title skip sequence
+            </label>
+            <select name="title-skip-sequence" id="selected-title-skip-sequence">
+                {% for skip_sequence in skip_sequences %}
+                <option value="{{ skip_sequence }}">{{ skip_sequence }}</option>
+                {% endfor %}
+            </select>
+            <input type="submit" value="Delete">
+        </form>
+        {% endif %}
+    </div>
+</div>

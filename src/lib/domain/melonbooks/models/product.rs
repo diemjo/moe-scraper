@@ -205,5 +205,7 @@ pub enum ScrapeProductsError {
     #[error(transparent)]
     AddSkippingUrlError(#[from] AddSkippingUrlError),
     #[error(transparent)]
+    GetTitleSkipSequencesError(#[from] GetTitleSkipSequencesError),
+    #[error(transparent)]
     Unknown(#[from] anyhow::Error),
 }

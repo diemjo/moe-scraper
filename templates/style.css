@@ -32,9 +32,22 @@ body {
     height: 100%;
 }
 
-.artist-selection {
-    direction: ltr;
+.product-configurations {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     padding: 0.3rem;
+}
+
+.form-field-text-label {
+    display: block;
+    font-size: 0.8rem;
+    font-variant: small-caps;
+}
+
+.form-field-select-label {
+    display: block;
+    font-size: 0.8rem;
+    font-variant: small-caps;
 }
 
 .product-grid-container {
@@ -104,6 +117,10 @@ body {
 
 /* use mobile breakpoing from above */
 @media screen and (max-width: 500px) {
+    .product-configurations {
+        grid-template-columns: 100%;
+    }
+
     .product-grid-container {
         grid-template-columns: minmax(var(--min-mobile-product-row-width), 1fr);
     }
