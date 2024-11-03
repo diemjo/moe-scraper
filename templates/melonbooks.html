@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html class="navy" lang="en">
+{% include "head.html" %}
+<body id="body">
+{% include "header.html" %}
+<h1>Melonbooks</h1>
+<div class="artist-follow">
+    <form
+        action="/melonbooks/artist"
+        method="post"
+    >
+        <label class="form-field-text-label" for="artist-follow-name">Artist</label>
+        <input class="form-field-text-input" id="artist-follow-name" type="text" name="name">
+        <input class="form-field-submit-button" type="submit" name="artist-follow" value="Follow">
+    </form>
+</div>
+<div class="artist-selection">
+    <label for="selected-artist">
+        Select artist
+    </label>
+    <select name="selected-artist" id="selected-artist" onchange="this.options[this.selectedIndex].id && (window.location = '/melonbooks?selected_artist=' + this.options[this.selectedIndex].id) || (window.location = '/melonbooks')">
+        <option {% if selected_artist.is_none() %}selected{% endif %}>-</option>
+        {% for artist in artists %}
+        <option id="{{ artist.id() }}" {% if Some(artist) == selected_artist.as_ref().as_ref() %}selected{% endif %}>{{ artist.name() }}</option>
+        {% endfor %}
+    </select>
+    {% if selected_artist.is_some() %}
+    <form
+        action="/melonbooks/artist/delete/id/{{ selected_artist.as_ref().unwrap().id() }}"
+        method="post"
+        onsubmit="return confirm('Are you sure you want to unfollow this artist? All products will be removed.');"
+    >
+        <input type="submit" value="Unfollow">
+    </form>
+    {% endif %}
+</div>
+<div class="product-grid-container">
+    {% for product in products %}
+    <div class="product-grid-item">
+        <div class="product-image-item">
+            <a href="{{ product.url() }}">
+                <img class="product-image" loading="lazy" src="{{ product.image_url() }}&height=250" alt="{{ product.title() }}">
+            </a>
+        </div>
+        <div class="product-item-title">
+            <a>
+                {{ product.title() }}
+            </a>
+        </div>
+        <div class="product-item-category">
+            <a>
+                {{ product.category() }}
+            </a>
+        </div>
+        <div class="product-item-flags">
+            <a>
+                {{ product.flags()|join(", ")}}
+            </a>
+        </div>
+        <div class="product-item-availability">
+            <a>
+                {{ product.availability() }}
+            </a>
+        </div>
+        {% if product.price().is_some() %}
+        <div class="product-item-price">
+            <a>
+                {{ product.price().unwrap() }}
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+</body>
+</html>
