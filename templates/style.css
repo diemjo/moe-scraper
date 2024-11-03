@@ -1,11 +1,16 @@
 :root {
     --mobile-breakpoint: 500px;
-    --min-product-row-width: 400px;
+    --min-product-row-width: 450px;
 }
 
 .navy {
     --bg: hsl(226, 23%, 11%);
     --fg: #bcbdd0;
+    --label-color: #ffaaaa;
+    --value-color: #ccffff;
+    --availability-available: #77ff77;
+    --availability-not-available: #ff7777;
+    --artist-following: #ffaaff;
     --color-scheme: dark;
 }
 
@@ -41,18 +46,50 @@ body {
     display: grid;
     grid-template-columns: 200px 2fr 2fr;
     column-gap: 0.5rem;
-    row-gap: 1rem;
+    row-gap: 0.5rem;
     padding: 0.5rem;
+    border-top: 0.05rem solid white;
+}
+
+.product-info-label {
+    display: block;
+    font-size: 0.8rem;
+    font-variant: small-caps;
+    color: var(--label-color);
+}
+
+.product-info-value {
+    color: var(--value-color);
+}
+
+.product-availability-available {
+    color: var(--availability-available);
+}
+
+.product-availability-not-available {
+    color: var(--availability-not-available);
+}
+
+.product-artist-following {
+    color: var(--artist-following);
 }
 
 .product-image-item {
     display: flex;
-    grid-row: 1 / 10;
+    grid-row: 1 / span 5;
     justify-content: center;
 }
 
+.product-item-date {
+    grid-column: span 2;
+}
+
 .product-item-title {
-    grid-column: 2 / span 2;
+    grid-column: span 2;
+}
+
+.product-item-artists {
+    grid-column: span 2;
 }
 
 .product-image {

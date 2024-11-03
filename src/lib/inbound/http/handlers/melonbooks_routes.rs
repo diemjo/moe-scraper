@@ -54,6 +54,12 @@ struct MelonbooksTemplate {
     skip_sequences: Vec<String>,
 }
 
+impl MelonbooksTemplate {
+    fn format_date(date: DateTime<Utc>) -> String {
+        date.format("%Y-%m-%d %H:%M").to_string()
+    }
+}
+
 #[derive(Debug, Deserialize)]
 pub struct OverviewParams {
     pub selected_artist: Option<i32>,
