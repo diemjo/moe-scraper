@@ -2,16 +2,20 @@ use debug_ignore::DebugIgnore;
 use figment::providers::{Env, Format, Yaml};
 use figment::Figment;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use serde_with::{serde_as, DisplayFromStr};
 use std::path::PathBuf;
+use std::str::FromStr;
 use strum_macros::{Display, EnumString};
 use thiserror::Error;
+use tracing::level_filters::LevelFilter;
 
 #[derive(Debug)]
 pub struct ServerConfiguration {
     pub db_path: PathBuf,
-    pub site_settings: HashMap<Site, SiteSettings>,
-    pub openssl_config: Option<PathBuf>
+    pub log_level: LevelFilter,
+    pub melonbooks: SiteSettings,
+    pub openssl_config: Option<PathBuf>,
+    pub http_settings: HttpSettings,
 }
 
 #[derive(Debug, Clone)]
@@ -26,6 +30,17 @@ pub struct DiscordSettings {
     pub image_url: Option<String>,
     pub username: String,
     pub chunk_size: u32
+}
+
+#[derive(Debug, Clone)]
+pub struct HttpSettings {
+    pub port: u16
+}
+
+impl Default for HttpSettings {
+    fn default() -> Self {
+        Self { port: 80 }
+    }
 }
 
 #[derive(Debug, Error)]
@@ -43,17 +58,18 @@ impl ServerConfiguration {
             .into_actual();
         Ok(config)
     }
-    
-    pub fn melonbooks(&self) -> bool {
-        self.site_settings.contains_key(&Site::Melonbooks)
-    }
 }
 
+#[serde_as]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ServerConfigurationOptions {
     pub dbpath: Option<PathBuf>,
-    pub sites: Option<HashMap<Site, SiteSettingsOptions>>,
-    pub opensslconfig: Option<PathBuf>
+    #[serde_as(as = "DisplayFromStr")]
+    #[serde(default = "default_log_level")]
+    pub loglevel: LevelFilter,
+    pub melonbooks: SiteSettingsOptions,
+    pub opensslconfig: Option<PathBuf>,
+    pub http: Option<HttpSettingsOptions>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -70,16 +86,25 @@ pub struct DiscordSettingsOptions {
     pub chunksize: Option<u32>
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct HttpSettingsOptions {
+    pub port: Option<u16>
+}
+
 impl ServerConfigurationOptions {
     fn into_actual(self) -> ServerConfiguration {
         ServerConfiguration {
             db_path: self.dbpath.unwrap_or_else(|| PathBuf::from("/data/moe-scraper.sqlite")),
-            site_settings: self.sites
-                .map(|map| map.into_iter().map(|(k, v)| (k.to_owned(), v.into_actual(&k))).collect())
-                .unwrap_or_else(|| HashMap::new()),
+            log_level: self.loglevel,
+            melonbooks: self.melonbooks.into_actual(&Site::Melonbooks),
             openssl_config: self.opensslconfig,
+            http_settings: self.http.map(|h| h.into_actual()).unwrap_or_else(|| HttpSettings::default()),
         }
     }
+}
+
+fn default_log_level() -> LevelFilter {
+    LevelFilter::INFO
 }
 
 impl SiteSettingsOptions {
@@ -98,6 +123,14 @@ impl DiscordSettingsOptions {
             image_url: self.imageurl,
             username: self.username.unwrap_or_else(|| site.to_string() + "-Scraper"),
             chunk_size: self.chunksize.unwrap_or(10)
+        }
+    }
+}
+
+impl HttpSettingsOptions {
+    fn into_actual(self) -> HttpSettings {
+        HttpSettings {
+            port: self.port.unwrap_or(80)
         }
     }
 }
