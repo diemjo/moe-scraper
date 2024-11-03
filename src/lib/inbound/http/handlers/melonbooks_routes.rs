@@ -4,7 +4,7 @@ use crate::domain::melonbooks::ports::MelonbooksService;
 use crate::inbound::http::AppState;
 use askama::Template;
 use askama_axum::{IntoResponse, Response};
-use axum::extract::{Path, Query, State};
+use axum::extract::{Query, State};
 use axum::http::StatusCode;
 use axum::{Form, Json};
 use chrono::{DateTime, Utc};

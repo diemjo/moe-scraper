@@ -4,7 +4,6 @@ use figment::Figment;
 use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, DisplayFromStr};
 use std::path::PathBuf;
-use std::str::FromStr;
 use strum_macros::{Display, EnumString};
 use thiserror::Error;
 use tracing::level_filters::LevelFilter;
