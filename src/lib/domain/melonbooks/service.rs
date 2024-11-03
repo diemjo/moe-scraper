@@ -97,12 +97,12 @@ where
             let skip_urls = self.repo.get_melonbooks_skipping_urls().await?.into_iter().collect::<BTreeSet<_>>();
             let urls = self.scraper.get_potential_product_urls(artist.name()).await?
                 .into_iter().filter(|u| !skip_urls.contains(u)).collect::<Vec<_>>();
-            let (new_urls, restocked_urls) = urls.into_iter()
+            let (new_urls, restocked_urls) = urls.iter()
                 .filter(|u| !available_urls.contains(u.as_str()))
                 .partition::<Vec<_>, _>(|u| !unavailable_urls.contains(u.as_str()));
             let title_skip_sequences = self.repo.get_melonbooks_title_skip_sequences().await?;
             let mut restocked_products = Vec::<Product>::new();
-            for restocked_url in restocked_urls.iter() {
+            for restocked_url in restocked_urls.into_iter() {
                 let product = self.repo.update_melonbooks_product(&UpdateProductArgs::new(restocked_url.to_owned(), Availability::Available)).await?;
                 if title_skip_sequences.iter().all(|s| !product.title().contains(s)) {
                     restocked_products.push(product);
@@ -110,19 +110,25 @@ where
             }
             self.notifier.restocked_products(artist.name(), &restocked_products).await;
             let mut new_products = Vec::<Product>::new();
-            for new_url in new_urls {
-                let product_data = self.scraper.get_product(&new_url).await?;
+            for new_url in new_urls.into_iter() {
+                let product_data = self.scraper.get_product(new_url).await?;
                 if product_data.artists().iter().all(|n| n != artist.name()) {
-                    self.repo.add_melonbooks_skipping_url(&new_url, product_data.artists()).await?;
+                    self.repo.add_melonbooks_skipping_url(new_url, product_data.artists()).await?;
                     continue;
                 }
                 if title_skip_sequences.iter().all(|s| !product_data.title().contains(s)) {
-                    let args = CreateProductArgs::new_from_data(new_url, product_data);
+                    let args = CreateProductArgs::new_from_data(new_url.to_owned(), product_data);
                     let product = self.repo.create_melonbooks_product(&args).await?;
                     new_products.push(product);
                 }
             }
             self.notifier.new_products(artist.name(), &new_products).await;
+            let newly_unavailable_products = available_products.iter()
+                .filter(|p| !urls.iter().any(|u| u.eq(p.url())))
+                .collect::<Vec<_>>();
+            for newly_unavailable in newly_unavailable_products.into_iter() {
+                self.repo.update_melonbooks_product(&UpdateProductArgs::new(newly_unavailable.url().to_owned(), Availability::NotAvailable)).await?;
+            }
         }
         Ok(())
     }
