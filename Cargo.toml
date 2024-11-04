@@ -34,7 +34,7 @@ strum_macros = { version = "0.26.4" }
 thiserror = { version = "1.0.63" }
 tokio = { version = "1.40.0", features = ["macros", "fs", "net", "rt-multi-thread"] }
 tokio-cron-scheduler = { version = "0.13.0" }
-tower-http = { version = "0.6.1", features = ["trace"] }
+tower-http = { version = "0.6.1", features = ["fs", "trace"] }
 tracing = { version = "0.1.40" }
 tracing-subscriber = { version = "0.3.18" }
 webhook = { version = "2.1.2" }

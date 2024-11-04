@@ -28,7 +28,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let scheduler = JobScheduler::new().await?;
     let melonbooks_service = init_melonbooks(&config, db.clone(), &scheduler).await?;
     scheduler.start().await?;
-    let http_config = HttpServerConfig { port: config.http_settings.port };
+    let http_config = HttpServerConfig { port: config.http_settings.port, assets_dir: config.http_settings.assets_dir };
     let http_server = HttpServer::new(http_config, melonbooks_service).await?;
     http_server.run().await?;
     Ok(())

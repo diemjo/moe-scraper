@@ -33,12 +33,16 @@ pub struct DiscordSettings {
 
 #[derive(Debug, Clone)]
 pub struct HttpSettings {
-    pub port: u16
+    pub port: u16,
+    pub assets_dir: Option<PathBuf>,
 }
 
 impl Default for HttpSettings {
     fn default() -> Self {
-        Self { port: 80 }
+        Self { 
+            port: 80,
+            assets_dir: None
+        }
     }
 }
 
@@ -87,7 +91,8 @@ pub struct DiscordSettingsOptions {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct HttpSettingsOptions {
-    pub port: Option<u16>
+    pub port: Option<u16>,
+    pub assetsdir: Option<PathBuf>,
 }
 
 impl ServerConfigurationOptions {
@@ -129,7 +134,8 @@ impl DiscordSettingsOptions {
 impl HttpSettingsOptions {
     fn into_actual(self) -> HttpSettings {
         HttpSettings {
-            port: self.port.unwrap_or(80)
+            port: self.port.unwrap_or(80),
+            assets_dir: self.assetsdir
         }
     }
 }

@@ -45,3 +45,7 @@ http:
   # the port of the http server
   # optional, default 80
   port: 80
+
+  # assets dir to be served
+  # optional, default: None
+  assetsdir: /data/assets

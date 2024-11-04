@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use crate::domain::melonbooks::ports::MelonbooksService;
 use anyhow::Context;
 use axum::response::Redirect;
@@ -6,12 +7,14 @@ use handlers::melonbooks_routes;
 use log::info;
 use std::sync::Arc;
 use tokio::net;
+use tower_http::services::ServeDir;
 
 mod handlers;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct HttpServerConfig {
     pub port: u16,
+    pub assets_dir: Option<PathBuf>
 }
 
 #[derive(Debug, Clone)]
@@ -33,10 +36,14 @@ impl HttpServer {
             },
         );
         let state = AppState { melonbooks_service };
-        let router = axum::Router::new()
+        let mut router = axum::Router::new()
             .route("/", get(|| async { Redirect::temporary("/melonbooks") }))
             .nest("/melonbooks", melonbooks_routes())
-            .nest("/api", api_routes())
+            .nest("/api", api_routes());
+        if let Some(assets_dir) = config.assets_dir {
+            router = router.nest_service("/assets", ServeDir::new(assets_dir));
+        }
+        let router = router
             .layer(trace_layer)
             .with_state(state);
         
