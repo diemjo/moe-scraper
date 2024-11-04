@@ -64,6 +64,7 @@ impl MelonbooksScraperImpl {
             }
             page_no += 1;
         }
+        urls.reverse();
         info!("Found {} total products for artist '{}'", urls.len(), artist);
         Ok(urls)
     }

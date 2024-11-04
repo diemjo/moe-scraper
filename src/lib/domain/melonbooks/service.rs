@@ -100,6 +100,7 @@ where
             let (new_urls, restocked_urls) = urls.iter()
                 .filter(|u| !available_urls.contains(u.as_str()))
                 .partition::<Vec<_>, _>(|u| !unavailable_urls.contains(u.as_str()));
+            
             let title_skip_sequences = self.repo.get_melonbooks_title_skip_sequences().await?;
             let mut restocked_products = Vec::<Product>::new();
             for restocked_url in restocked_urls.into_iter() {
@@ -108,7 +109,9 @@ where
                     restocked_products.push(product);
                 }
             }
+            info!("found '{}' restocked products for '{}'", restocked_products.len(), artist.name());
             self.notifier.restocked_products(artist.name(), &restocked_products).await;
+
             let mut new_products = Vec::<Product>::new();
             for new_url in new_urls.into_iter() {
                 let product_data = self.scraper.get_product(new_url).await?;
@@ -122,10 +125,13 @@ where
                     new_products.push(product);
                 }
             }
+            info!("found '{}' new products for '{}'", new_products.len(), artist.name());
             self.notifier.new_products(artist.name(), &new_products).await;
+
             let newly_unavailable_products = available_products.iter()
                 .filter(|p| !urls.iter().any(|u| u.eq(p.url())))
                 .collect::<Vec<_>>();
+            info!("update '{}' products as now unavailable for '{}'", newly_unavailable_products.len(), artist.name());
             for newly_unavailable in newly_unavailable_products.into_iter() {
                 self.repo.update_melonbooks_product(&UpdateProductArgs::new(newly_unavailable.url().to_owned(), Availability::NotAvailable)).await?;
             }
