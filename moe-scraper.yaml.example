@@ -1,4 +1,9 @@
 # Example config
+# Config file is searched in:
+# - /config/moe-scraper.yaml
+# - ./config/moe-scraper.yaml
+# - ./moe-scraper.yaml
+# environment with prefix `MOE_` (e.g. `MOE_MELONBOOKS_SCHEDULE="* * 1 2 3 4"`)
 
 # Location of the database
 # optional, default: "/data/moe-scraper.sqlite"
