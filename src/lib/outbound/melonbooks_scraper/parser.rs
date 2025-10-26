@@ -81,8 +81,12 @@ fn parse_product_tags(item_page: Node) -> Result<Vec<String>, ParseError> {
 fn parse_product_price(item_page: Node) -> Result<Option<String>, ParseError> {
     let item_meta = item_page.find(Class("item-metas-wrap")).next()
         .ok_or_else(|| ParseError::ProductItemMetaNotFound)?;
-    let price = item_meta.find(Class("price").child(Class("yen"))).next()
-        .map(|p| p.text().trim().to_owned());
+    let price = item_meta.find(Class("price")).next()
+        .map(|p| {
+            let currency = p.find(Class("price--currency")).next().map(|c| c.text().to_owned()).unwrap_or("?".to_owned());
+            let value = p.find(Class("price--value")).next().map(|v| v.text().trim().to_owned()).unwrap_or("?".to_owned());
+            format!("{currency} {value}")
+        });
     Ok(price)
 }
 
@@ -136,11 +140,11 @@ fn parse_product_artists(item_page: Node) -> Result<Vec<String>, ParseError> {
 fn parse_product_availability(item_page: Node) -> Result<Availability, ParseError> {
     let item_meta = item_page.find(Class("item-metas-wrap")).next()
         .ok_or_else(|| ParseError::ProductItemMetaNotFound)?;
-    let availability_text = item_meta.find(Class("state-instock")).next()
+    let availability_text = item_meta.find(Class("product-info__inventory-status__text")).next()
         .map(|n| n.text())
         .ok_or_else(|| ParseError::ProductAvailabilityNotFound)?;
     let availability = match availability_text.as_str() {
-        "-" => Availability::NotAvailable,
+        "-" | "" => Availability::NotAvailable,
         "好評受付中" => Availability::Preorder,
         "残りわずか" => Availability::Available,
         "在庫あり" => Availability::Available,
@@ -197,7 +201,7 @@ pub enum ParseError {
 
 #[cfg(test)]
 mod test {
-    use crate::outbound::melonbooks_scraper::parser::{parse_product_details, parse_product_list};
+    use crate::{domain::melonbooks::models::availability::Availability, outbound::melonbooks_scraper::parser::{parse_product_details, parse_product_list}};
     use select::document::Document;
 
     #[test]
@@ -213,6 +217,8 @@ mod test {
         let document = get_details_document();
         let details = parse_product_details(document).unwrap();
         println!("{:?}", details);
+        assert_eq!(details.price(), Some(&"¥ 3,960".to_owned()));
+        assert_eq!(details.availability(), &Availability::NotAvailable);
     }
     
     #[test]
