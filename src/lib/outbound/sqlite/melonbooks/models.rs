@@ -3,7 +3,7 @@ use crate::domain::melonbooks::models::availability::Availability;
 use crate::domain::melonbooks::models::product::Product;
 use crate::outbound::sqlite::schema;
 use chrono::NaiveDateTime;
-use diesel::{AsChangeset, Identifiable, Insertable, Queryable, Selectable};
+use diesel::{AsChangeset, Identifiable, Insertable, Queryable, Selectable, ExpressionMethods};
 
 #[derive(Debug, Queryable, Selectable, Identifiable, AsChangeset)]
 #[diesel(table_name = schema::melonbooks_product)]
