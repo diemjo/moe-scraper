@@ -13,6 +13,7 @@ pub struct ServerConfiguration {
     pub db_path: PathBuf,
     pub log_level: LevelFilter,
     pub melonbooks: SiteSettings,
+    pub amiami: SiteSettings,
     pub openssl_config: Option<PathBuf>,
     pub http_settings: HttpSettings,
 }
@@ -71,6 +72,7 @@ pub struct ServerConfigurationOptions {
     #[serde(default = "default_log_level")]
     pub loglevel: LevelFilter,
     pub melonbooks: SiteSettingsOptions,
+    pub amiami: SiteSettingsOptions,
     pub opensslconfig: Option<PathBuf>,
     pub http: Option<HttpSettingsOptions>,
 }
@@ -101,6 +103,7 @@ impl ServerConfigurationOptions {
             db_path: self.dbpath.unwrap_or_else(|| PathBuf::from("/data/moe-scraper.sqlite")),
             log_level: self.loglevel,
             melonbooks: self.melonbooks.into_actual(&Site::Melonbooks),
+            amiami: self.amiami.into_actual(&Site::Amiami),
             openssl_config: self.opensslconfig,
             http_settings: self.http.map(|h| h.into_actual()).unwrap_or_else(|| HttpSettings::default()),
         }
@@ -144,4 +147,5 @@ impl HttpSettingsOptions {
 #[serde(rename_all = "snake_case")]
 pub enum Site {
     Melonbooks,
+    Amiami,
 } 

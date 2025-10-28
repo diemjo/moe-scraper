@@ -1,9 +1,13 @@
 use chrono::Local;
 use log::{error, info};
 use moe_scraper::config::ServerConfiguration;
+use moe_scraper::domain::amiami::ports::{AmiamiRepository, AmiamiService};
+use moe_scraper::domain::amiami::service::AmiamiServiceImpl;
 use moe_scraper::domain::melonbooks::ports::{MelonbooksRepository, MelonbooksService};
 use moe_scraper::domain::melonbooks::service::MelonbooksServiceImpl;
 use moe_scraper::inbound::http::{HttpServer, HttpServerConfig};
+use moe_scraper::outbound::amiami_discord_notifier::AmiamiDiscordNotifier;
+use moe_scraper::outbound::amiami_scraper::AmiamiScraperImpl;
 use moe_scraper::outbound::melonbooks_discord_notifier::MelonbooksDiscordNotifier;
 use moe_scraper::outbound::melonbooks_scraper::MelonbooksScraperImpl;
 use moe_scraper::outbound::sqlite::Sqlite;
@@ -27,9 +31,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     db.setup()?;
     let scheduler = JobScheduler::new().await?;
     let melonbooks_service = init_melonbooks(&config, db.clone(), &scheduler).await?;
+    let amiami_service = init_amiami(&config, db.clone(), &scheduler).await?;
     scheduler.start().await?;
     let http_config = HttpServerConfig { port: config.http_settings.port, assets_dir: config.http_settings.assets_dir };
-    let http_server = HttpServer::new(http_config, melonbooks_service).await?;
+    let http_server = HttpServer::new(http_config, melonbooks_service, amiami_service).await?;
     http_server.run().await?;
     Ok(())
 }
@@ -55,6 +60,36 @@ async fn schedule_melonbooks<S: MelonbooksService>(scheduler: &JobScheduler, sch
                 async move {
                     match service.scrape_available_products().await {
                         Ok(_) => info!("Successfully scraped melonbooks"),
+                        Err(e) => error!("{:?}", e),
+                    };
+                }
+            })
+        })?
+    ).await?;
+    Ok(())
+}
+
+async fn init_amiami(config: &ServerConfiguration, repo: impl AmiamiRepository, scheduler: &JobScheduler) -> Result<Arc<impl AmiamiService>, anyhow::Error> {
+    let amiami_settings = &config.amiami;
+    let discord_settings = &amiami_settings.discord_settings;
+    let schedule = &amiami_settings.schedule;
+    let notifier = AmiamiDiscordNotifier::new(discord_settings.to_owned());
+    let scraper = AmiamiScraperImpl::new()?;
+    let service = Arc::new(AmiamiServiceImpl::new(repo, notifier, scraper));
+    if let Some(schedule) = schedule {
+        schedule_amiami(&scheduler, &schedule, service.clone()).await?;
+    }
+    Ok(service)
+}
+
+async fn schedule_amiami<S: AmiamiService>(scheduler: &JobScheduler, schedule: &str, service: Arc<S>) -> Result<(), anyhow::Error> {
+    scheduler.add(
+        Job::new_async_tz(schedule, Local, move |_uuid, _l| {
+            Box::pin({
+                let service = service.clone();
+                async move {
+                    match service.scrape_available_products().await {
+                        Ok(_) => info!("Successfully scraped amiami"),
                         Err(e) => error!("{:?}", e),
                     };
                 }

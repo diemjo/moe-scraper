@@ -1,6 +1,7 @@
+use serde::Deserialize;
 use strum_macros::{Display, EnumIter, EnumString};
 
-#[derive(Debug, Clone, PartialEq, Eq, Display, EnumString, EnumIter)]
+#[derive(Debug, Clone, PartialEq, Eq, Display, EnumString, Deserialize, EnumIter)]
 pub enum Availability {
     Available,
     Preorder,

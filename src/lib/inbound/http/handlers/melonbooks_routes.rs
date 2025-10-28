@@ -1,3 +1,4 @@
+use crate::domain::amiami::ports::AmiamiService;
 use crate::domain::melonbooks::models::artist::{Artist, ArtistArgs, FollowArtistError, GetArtistsError, UnfollowArtistError};
 use crate::domain::melonbooks::models::product::{AddTitleSkipSequenceError, DeleteTitleSkipSequenceError, GetProductsError, GetTitleSkipSequencesError, Product};
 use crate::domain::melonbooks::ports::MelonbooksService;
@@ -35,7 +36,7 @@ impl From<Artist> for ArtistResponse {
     }
 }
 
-pub async fn get_artists<MS: MelonbooksService>(State(state): State<AppState<MS>>) -> Json<GetArtistsResponseBody> {
+pub async fn get_artists<MS: MelonbooksService, AS: AmiamiService>(State(state): State<AppState<MS, AS>>) -> Json<GetArtistsResponseBody> {
     let artists = state.melonbooks_service.get_artists().await
         .unwrap()
         .into_iter()
@@ -65,7 +66,7 @@ pub struct OverviewParams {
     pub selected_artist: Option<i32>,
 }
 
-pub async fn get_overview<MS: MelonbooksService>(State(state): State<AppState<MS>>, Query(params): Query<OverviewParams>) -> Response {
+pub async fn get_overview<MS: MelonbooksService, AS: AmiamiService>(State(state): State<AppState<MS, AS>>, Query(params): Query<OverviewParams>) -> Response {
     get_overview_response(state.melonbooks_service, params.selected_artist).await
 }
 
@@ -74,7 +75,7 @@ pub struct PostArtistForm {
     name: String
 }
 
-pub async fn post_artist<MS: MelonbooksService>(State(state): State<AppState<MS>>, Form(input): Form<PostArtistForm>) -> Response {
+pub async fn post_artist<MS: MelonbooksService, AS: AmiamiService>(State(state): State<AppState<MS, AS>>, Form(input): Form<PostArtistForm>) -> Response {
     if let Err(e) = state.melonbooks_service.follow_artist(&ArtistArgs::new(input.name)).await {
         return e.into_response();
     }
@@ -87,7 +88,7 @@ pub struct DeleteArtistForm {
     selected_artist_id: i32
 }
 
-pub async fn delete_artist<MS: MelonbooksService>(State(state): State<AppState<MS>>, Form(input): Form<DeleteArtistForm>) -> Response {
+pub async fn delete_artist<MS: MelonbooksService, AS: AmiamiService>(State(state): State<AppState<MS, AS>>, Form(input): Form<DeleteArtistForm>) -> Response {
     if let Err(e) = state.melonbooks_service.unfollow_artist(input.selected_artist_id).await {
         return e.into_response();
     }
@@ -100,7 +101,7 @@ pub struct AddTitleSkipSequenceForm {
     title_skip_sequence: String
 }
 
-pub async fn post_title_skip_sequence<MS: MelonbooksService>(State(state): State<AppState<MS>>, Form(input): Form<AddTitleSkipSequenceForm>) -> Response {
+pub async fn post_title_skip_sequence<MS: MelonbooksService, AS: AmiamiService>(State(state): State<AppState<MS, AS>>, Form(input): Form<AddTitleSkipSequenceForm>) -> Response {
     if let Err(e) = state.melonbooks_service.add_title_skip_sequence(&input.title_skip_sequence).await {
         return e.into_response();
     }
@@ -113,7 +114,7 @@ pub struct DeleteTitleSkipSequenceForm {
     title_skip_sequence: String
 }
 
-pub async fn delete_title_skip_sequence<MS: MelonbooksService>(State(state): State<AppState<MS>>, Form(input): Form<DeleteTitleSkipSequenceForm>) -> Response {
+pub async fn delete_title_skip_sequence<MS: MelonbooksService, AS: AmiamiService>(State(state): State<AppState<MS, AS>>, Form(input): Form<DeleteTitleSkipSequenceForm>) -> Response {
     if let Err(e) = state.melonbooks_service.delete_title_skip_sequence(&input.title_skip_sequence).await {
         return e.into_response();
     }

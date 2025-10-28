@@ -1,12 +1,13 @@
 use anyhow::{anyhow, Context};
+use diesel::connection::SimpleConnection;
 use diesel::r2d2::{ConnectionManager, Pool};
 use diesel::SqliteConnection;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
+use log::info;
 use r2d2::PooledConnection;
 use std::time::Duration;
-use diesel::connection::SimpleConnection;
-use log::info;
 
+mod amiami;
 mod melonbooks;
 mod schema;
 

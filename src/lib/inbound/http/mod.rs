@@ -1,10 +1,12 @@
-use std::path::PathBuf;
+use crate::domain::amiami::ports::AmiamiService;
 use crate::domain::melonbooks::ports::MelonbooksService;
+use crate::inbound::http::handlers::amiami_routes;
 use anyhow::Context;
 use axum::response::Redirect;
 use axum::routing::{get, post};
 use handlers::melonbooks_routes;
 use log::info;
+use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::net;
 use tower_http::services::ServeDir;
@@ -18,8 +20,9 @@ pub struct HttpServerConfig {
 }
 
 #[derive(Debug, Clone)]
-struct AppState<MS: MelonbooksService> {
-    melonbooks_service: Arc<MS>
+struct AppState<MS: MelonbooksService, AS: AmiamiService> {
+    melonbooks_service: Arc<MS>,
+    amiami_service: Arc<AS>
 }
 
 pub struct HttpServer {
@@ -28,17 +31,18 @@ pub struct HttpServer {
 }
 
 impl HttpServer {
-    pub async fn new<MS: MelonbooksService>( config: HttpServerConfig, melonbooks_service: Arc<MS>) -> Result<Self, anyhow::Error> {
+    pub async fn new<MS: MelonbooksService, AS: AmiamiService>( config: HttpServerConfig, melonbooks_service: Arc<MS>, amiami_service: Arc<AS>) -> Result<Self, anyhow::Error> {
         let trace_layer = tower_http::trace::TraceLayer::new_for_http().make_span_with(
             |request: &axum::extract::Request<_>| {
                 let uri = request.uri().to_string();
                 tracing::info_span!("http_request", method = ?request.method(), uri)
             },
         );
-        let state = AppState { melonbooks_service };
+        let state = AppState { melonbooks_service, amiami_service };
         let mut router = axum::Router::new()
             .route("/", get(|| async { Redirect::temporary("/melonbooks") }))
             .nest("/melonbooks", melonbooks_routes())
+            .nest("/amiami", amiami_routes())
             .nest("/api", api_routes());
         if let Some(assets_dir) = config.assets_dir {
             router = router.nest_service("/assets", ServeDir::new(assets_dir));
@@ -61,15 +65,20 @@ impl HttpServer {
     }
 }
 
-fn melonbooks_routes<MS: MelonbooksService>() -> axum::Router<AppState<MS>> {
+fn melonbooks_routes<MS: MelonbooksService, AS: AmiamiService>() -> axum::Router<AppState<MS, AS>> {
     axum::Router::new()
-        .route("/", get(melonbooks_routes::get_overview::<MS>))
-        .route("/artist", post(melonbooks_routes::post_artist::<MS>))
-        .route("/artist/delete", post(melonbooks_routes::delete_artist::<MS>))
-        .route("/title-skip-sequence", post(melonbooks_routes::post_title_skip_sequence::<MS>))
-        .route("/title-skip-sequence/delete", post(melonbooks_routes::delete_title_skip_sequence::<MS>))
+        .route("/", get(melonbooks_routes::get_overview::<MS, AS>))
+        .route("/artist", post(melonbooks_routes::post_artist::<MS, AS>))
+        .route("/artist/delete", post(melonbooks_routes::delete_artist::<MS, AS>))
+        .route("/title-skip-sequence", post(melonbooks_routes::post_title_skip_sequence::<MS, AS>))
+        .route("/title-skip-sequence/delete", post(melonbooks_routes::delete_title_skip_sequence::<MS, AS>))
 }
 
-fn api_routes<MS: MelonbooksService>() -> axum::Router<AppState<MS>> {
-    axum::Router::new().route("/artists", get(melonbooks_routes::get_artists::<MS>))
+fn amiami_routes<MS: MelonbooksService, AS: AmiamiService>() -> axum::Router<AppState<MS, AS>> {
+    axum::Router::new()
+        .route("/", get(amiami_routes::get_overview::<MS, AS>))
+}
+
+fn api_routes<MS: MelonbooksService, AS: AmiamiService>() -> axum::Router<AppState<MS, AS>> {
+    axum::Router::new().route("/artists", get(melonbooks_routes::get_artists::<MS, AS>))
 }

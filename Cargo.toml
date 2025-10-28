@@ -25,9 +25,10 @@ itertools = { version = "0.14.0" }
 log = { version = "0.4.22" }
 r2d2 = { version = "0.8.10" }
 regex = { version = "1.11.0" }
-reqwest = { version = "0.12.8", features = ["cookies", "rustls-tls"]}
+reqwest = { version = "0.12.8", features = ["cookies", "json"]}
 select = { version = "0.6.0" }
 serde = { version = "1.0.210", features = ["derive"] }
+serde_json = { version = "1.0.132" }
 serde_with = { version = "3.11.0" }
 strum = { version = "0.27.2" }
 strum_macros = { version = "0.27.2" }

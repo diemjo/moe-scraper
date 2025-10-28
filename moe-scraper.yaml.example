@@ -41,6 +41,33 @@ melonbooks:
     # optional, default: 10
     chunksize: 10
 
+amiami:
+  # cron schedule when to scrape this site. if empty it will not be scraped
+  # format: sec min hour day_of_month month day_of_week
+  # -> every day at 02:01:05 and 09:01:05
+  # optional, default None
+  # example
+  schedule: "0, 0, 6,18 * * *"
+
+  # Discord webhook api keys for notifications
+  # optional, default: None
+  discord:
+    # webhook key
+    # mandatory
+    apikey: "abcxyz123"
+
+    # name displayed as author in the messages
+    # optional, default: "{site}-Scraper"
+    username: "Amiami"
+
+    # image to display as the avatar of the messages
+    # optional, default: None
+    imageurl: "https://my-website.cool-image.png"
+
+    # how many products to send at a time
+    # optional, default: 10
+    chunksize: 10
+
 # Overwrite the openssl config file location
 # optional, default: None
 opensslconfig: "/etc/seclevel_1_openssl.conf"

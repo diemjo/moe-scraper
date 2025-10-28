@@ -239,7 +239,7 @@ mod test {
         include_str!(
             concat!(
                 env!("CARGO_MANIFEST_DIR"),
-                "/test-data/product-list.html"
+                "/test-data/melonbooks/product-list.html"
             )
         )
     }
@@ -255,7 +255,7 @@ mod test {
         include_str!(
             concat!(
                 env!("CARGO_MANIFEST_DIR"),
-                "/test-data/product-details.html"
+                "/test-data/melonbooks/product-details.html"
             )
         )
     }
@@ -271,7 +271,7 @@ mod test {
         include_str!(
             concat!(
                 env!("CARGO_MANIFEST_DIR"),
-                "/test-data/product-music.html"
+                "/test-data/melonbooks/product-music.html"
             )
         )
     }

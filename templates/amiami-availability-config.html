@@ -1,0 +1,13 @@
+<div class="artist-configuration">
+    <div class="availability-selection">
+        <label class="form-field-select-label" for="selected-availability">
+            Select availability
+        </label>
+        <select name="selected-availability" id="selected-availability" onchange="this.options[this.selectedIndex].id && (window.location = '/amiami?selected_availability=' + this.options[this.selectedIndex].id) || (window.location = '/amiami')">
+            <option {% if selected_availability.is_none() %}selected{% endif %}>-</option>
+            {% for availability in availabilities %}
+            <option id="{{ availability }}" value="{{ availability }}" {% if Some(availability) == selected_availability.as_ref().as_ref() %}selected{% endif %}>{{ availability }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
