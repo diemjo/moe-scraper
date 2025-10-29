@@ -1,6 +1,6 @@
 use crate::domain::amiami::models::availability::Availability;
 use crate::outbound::amiami_scraper::parser::ParseError;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, NaiveDate, Utc};
 use thiserror::Error;
 
 #[derive(Debug, PartialEq, Eq)]
@@ -14,12 +14,13 @@ pub struct Product {
     maker: String,
     full_price: i32,
     min_price: i32,
+    release_date: NaiveDate,
     availability: Availability,
 }
 
 impl Product {
-    pub fn new(id: i32, date_added: DateTime<Utc>, url: String, title: String, image_url: String, category: String, maker: String, full_price: i32, min_price: i32, availability: Availability) -> Self {
-        Self { id, date_added, url, title, image_url, category, maker, full_price, min_price, availability }
+    pub fn new(id: i32, date_added: DateTime<Utc>, url: String, title: String, image_url: String, category: String, maker: String, full_price: i32, min_price: i32, release_date: NaiveDate, availability: Availability) -> Self {
+        Self { id, date_added, url, title, image_url, category, maker, full_price, min_price, release_date, availability }
     }
 
     pub fn id(&self) -> i32 { self.id }
@@ -31,6 +32,7 @@ impl Product {
     pub fn maker(&self) -> &str { &self.maker }
     pub fn full_price(&self) -> i32 { self.full_price }
     pub fn min_price(&self) -> i32 { self.min_price }
+    pub fn release_date(&self) -> NaiveDate { self.release_date }
     pub fn availability(&self) -> Availability { self.availability.clone() }
 }
 
@@ -49,12 +51,13 @@ pub struct ProductData {
     maker: String,
     full_price: i32,
     min_price: i32,
+    release_date: NaiveDate,
     availability: Availability,
 }
 
 impl ProductData {
-    pub fn new(url: String, title: String, image_url: String, category: String, maker: String, full_price: i32, min_price: i32, availability: Availability) -> Self {
-        Self { url, title, image_url, category, maker, full_price, min_price, availability }
+    pub fn new(url: String, title: String, image_url: String, category: String, maker: String, full_price: i32, min_price: i32, release_date: NaiveDate, availability: Availability) -> Self {
+        Self { url, title, image_url, category, maker, full_price, min_price, release_date, availability }
     }
 
     pub fn url(&self) -> &str { &self.url }
@@ -64,6 +67,7 @@ impl ProductData {
     pub fn maker(&self) -> &str { &self.maker }
     pub fn full_price(&self) -> i32 { self.full_price }
     pub fn min_price(&self) -> i32 { self.min_price }
+    pub fn release_date(&self) -> NaiveDate { self.release_date }
     pub fn availability(&self) -> Availability { self.availability.to_owned() }
 }
 
@@ -76,16 +80,17 @@ pub struct CreateProductArgs {
     maker: String,
     full_price: i32,
     min_price: i32,
+    release_date: NaiveDate,
     availability: Availability,
 }
 
 impl CreateProductArgs {
-    pub fn new(url: String, title: String, image_url: String, category: String, maker: String, full_price: i32, min_price: i32, availability: Availability) -> Self {
-        Self { url, title, image_url, category, maker, full_price, min_price, availability }
+    pub fn new(url: String, title: String, image_url: String, category: String, maker: String, full_price: i32, min_price: i32, release_date: NaiveDate, availability: Availability) -> Self {
+        Self { url, title, image_url, category, maker, full_price, min_price, release_date, availability }
     }
     
     pub fn new_from_data(data: ProductData) -> Self {
-        Self::new(data.url, data.title, data.image_url, data.category, data.maker, data.full_price, data.min_price, data.availability)
+        Self::new(data.url, data.title, data.image_url, data.category, data.maker, data.full_price, data.min_price, data.release_date, data.availability)
     }
 
     pub fn url(&self) -> &str { &self.url }
@@ -95,6 +100,7 @@ impl CreateProductArgs {
     pub fn maker(&self) -> &str { &self.maker }
     pub fn full_price(&self) -> i32 { self.full_price }
     pub fn min_price(&self) -> i32 { self.min_price }
+    pub fn release_date(&self) -> NaiveDate { self.release_date }
     pub fn availability(&self) -> Availability { self.availability.to_owned() }
 }
 
@@ -107,15 +113,24 @@ impl AsRef<CreateProductArgs> for CreateProductArgs {
 #[derive(Debug)]
 pub struct UpdateProductArgs {
     url: String,
+    full_price: i32,
+    min_price: i32,
+    release_date: NaiveDate,
     availability: Availability,
 }
 
 impl UpdateProductArgs {
-    pub fn new(url: String, availability: Availability) -> Self {
-        Self { url, availability }
+    pub fn new(url: String, full_price: i32, min_price: i32, release_date: NaiveDate, availability: Availability) -> Self {
+        Self { url, full_price, min_price, release_date, availability }
     }
 
     pub fn url(&self) -> &str { &self.url }
+
+    pub fn full_price(&self) -> i32 { self.full_price }
+
+    pub fn min_price(&self) -> i32 { self.min_price }
+
+    pub fn release_date(&self) -> NaiveDate { self.release_date }
 
     pub fn availability(&self) -> Availability { self.availability.clone() }
 }

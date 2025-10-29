@@ -1,8 +1,11 @@
 use crate::domain::amiami::models::availability::Availability;
 use crate::domain::amiami::models::product::ProductData;
 use crate::outbound::amiami_scraper::{PRODUCT_DETAILS_URL, PRODUCT_IMAGE_BASE_URL};
+use chrono::NaiveDateTime;
 use serde_json::Value;
 use thiserror::Error;
+
+const DATE_TIME_FORMAT: &str = "%Y-%m-%d %H:%M:%S";
 
 pub fn parse_product_list(category: &str, json: Value) -> Result<Vec<ProductData>, ParseError> {
     let items = json["items"].as_array()
@@ -22,8 +25,20 @@ fn parse_item(category: &str, json: &Value) -> Result<ProductData, ParseError> {
     let maker = json["maker_name"].as_str().ok_or(ParseError::ProductMakerNotFound(gcode.to_owned()))?.to_owned();
     let full_price = json["c_price_taxed"].as_number().and_then(|n| n.as_i64()).ok_or(ParseError::ProductFullPriceNotFound(gcode.to_owned()))?;
     let min_price = json["min_price"].as_number().and_then(|n| n.as_i64()).ok_or(ParseError::ProductMinPriceNotFound(gcode.to_owned()))?;
+    let release_date_str = json["releasedate"].as_str().ok_or(ParseError::ProductReleaseDate(gcode.to_owned()))?;
+    let release_date = NaiveDateTime::parse_from_str(release_date_str, DATE_TIME_FORMAT).map_err(|_| ParseError::ProductReleaseDate(gcode.to_owned()))?;
     let availability = parse_availability(gcode, json)?;
-    Ok(ProductData::new(url, title, image_url, category.to_owned(), maker, full_price.try_into().unwrap_or(0), min_price.try_into().unwrap_or(0), availability))
+    Ok(ProductData::new(
+        url,
+        title,
+        image_url,
+        category.to_owned(),
+        maker,
+        full_price.try_into().unwrap_or(0),
+        min_price.try_into().unwrap_or(0),
+        release_date.date(),
+        availability
+    ))
 }
 
 fn parse_availability(gcode: &str, json: &Value) -> Result<Availability, ParseError> {
@@ -54,6 +69,8 @@ pub enum ParseError {
     ProductFullPriceNotFound(String),
     #[error("Could not find product min price for gcode {0}")]
     ProductMinPriceNotFound(String),
+    #[error("Could not find product release date for gcode {0}")]
+    ProductReleaseDate(String),
     #[error("Could not find product availability {0} for gcode {1}")]
     ProductAvailabilityNotFound(String, String),
 }

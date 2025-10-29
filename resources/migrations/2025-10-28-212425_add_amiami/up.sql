@@ -8,6 +8,7 @@ CREATE TABLE amiami_product (
     maker TEXT NOT NULL,
     full_price INTEGER NOT NULL,
     min_price INTEGER NOT NULL,
+    release_date DATE NOT NULL,
     availability TEXT NOT NULL,
     CONSTRAINT fk__amiami_product__category FOREIGN KEY (category_id) REFERENCES amiami_category,
     CONSTRAINT uk__amiami_product__url UNIQUE (url)

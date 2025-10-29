@@ -57,7 +57,13 @@ where
 
             let mut restocked_products = Vec::<Product>::new();
             for restocked_product_data in restocked_product_data_list.into_iter() {
-                let product = self.repo.update_amiami_product(&UpdateProductArgs::new(restocked_product_data.url().to_owned(), restocked_product_data.availability())).await?;
+                let product = self.repo.update_amiami_product(&UpdateProductArgs::new(
+                    restocked_product_data.url().to_owned(),
+                    restocked_product_data.full_price(),
+                    restocked_product_data.min_price(),
+                    restocked_product_data.release_date(),
+                    restocked_product_data.availability()
+                )).await?;
                 restocked_products.push(product);
             }
             info!("found '{}' restocked products for category '{}'", restocked_products.len(), category);

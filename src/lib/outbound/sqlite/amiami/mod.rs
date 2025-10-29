@@ -54,6 +54,7 @@ impl Sqlite {
                 maker: product_args.maker(),
                 full_price: product_args.full_price(),
                 min_price: product_args.min_price(),
+                release_date: product_args.release_date(),
                 availability: product_args.availability().clone()
             })
             .returning(ProductRow::as_returning())
@@ -69,7 +70,12 @@ impl Sqlite {
         args: &UpdateProductArgs,
     ) -> Result<ProductRow, anyhow::Error> {
         let product = diesel::update(&product)
-            .set(product_dsl::availability.eq(args.availability().to_string()))
+            .set((
+                product_dsl::availability.eq(args.availability().to_string()),
+                product_dsl::full_price.eq(args.full_price()),
+                product_dsl::min_price.eq(args.min_price()),
+                product_dsl::release_date.eq(args.release_date())
+            ))
             .returning(ProductRow::as_returning())
             .get_result(connection)
             .with_context(|| format!("cannot update product with url '{}'", product.url))?;
@@ -148,6 +154,7 @@ impl Sqlite {
             product.maker.to_owned(),
             product.full_price.to_owned(),
             product.min_price.to_owned(),
+            product.release_date,
             product.availability.to_owned(),
         );
         Ok(product)
@@ -177,6 +184,7 @@ impl AmiamiRepository for Sqlite {
                         product_row.maker,
                         product_row.full_price,
                         product_row.min_price,
+                        product_row.release_date,
                         product_row.availability
                     );
                     Ok(product)

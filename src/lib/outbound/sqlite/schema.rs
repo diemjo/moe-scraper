@@ -20,6 +20,7 @@ diesel::table! {
         maker -> Text,
         full_price -> Integer,
         min_price -> Integer,
+        release_date -> Date,
         availability -> Text,
     }
 }

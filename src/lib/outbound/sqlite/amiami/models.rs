@@ -1,6 +1,6 @@
 use crate::domain::amiami::models::availability::Availability;
 use crate::outbound::sqlite::schema;
-use chrono::NaiveDateTime;
+use chrono::{NaiveDate, NaiveDateTime};
 use diesel::{AsChangeset, ExpressionMethods, Identifiable, Insertable, Queryable, Selectable};
 
 #[derive(Debug, Queryable, Selectable, Identifiable, AsChangeset)]
@@ -16,6 +16,7 @@ pub struct ProductRow {
     pub maker: String,
     pub full_price: i32,
     pub min_price: i32,
+    pub release_date: NaiveDate,
     #[diesel(serialize_as = String, deserialize_as = String)]
     pub availability: Availability,
 }
@@ -31,6 +32,7 @@ pub struct ProductRowInsert<'a> {
     pub maker: &'a str,
     pub full_price: i32,
     pub min_price: i32,
+    pub release_date: NaiveDate,
     #[diesel(serialize_as = String, deserialize_as = String)]
     pub availability: Availability,
 }
