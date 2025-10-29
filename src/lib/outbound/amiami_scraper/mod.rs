@@ -14,7 +14,7 @@ const USER_AGENT: &str = "User-Agent";
 const USER_AGENT_VALUE: &str = "Mozilla/5.0";
 const BISHOUJO_CATEGORY: &str = "459";
 const MATURE_CATEGORY: &str = "9708";
-const PRODUCT_LIST_URL: &str = "https://api.amiami.com/api/v1.0/items?pagemax=50&pagecnt={page}&lang=eng&age_confirm=1&s_cate2={category}&s_st_list_preorder_available=1&s_st_list_backorder_available=1&s_st_list_newitem_available=1&s_st_condition_flg=1";
+const PRODUCT_LIST_URL: &str = "https://api.amiami.com/api/v1.0/items?pagemax=50&pagecnt={page}&lang=eng&age_confirm=1&s_cate2={category}&s_st_list_preorder_available=1&s_st_list_backorder_available=1&s_st_list_newitem_available=1&s_st_condition_flg=1&s_sortkey=regtimed";
 const PRODUCT_DETAILS_URL: &str = "https://www.amiami.com/eng/detail/?{code}";
 const PRODUCT_IMAGE_BASE_URL: &str = "https://img.amiami.com";
 const MAX_NEW_PAGES: u32 = 3;
