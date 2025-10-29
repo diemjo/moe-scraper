@@ -53,7 +53,12 @@ impl AmiamiDiscordNotifier {
 }
 
 fn product_description(product: &Product) -> String {
-    format!("¥{}", product.min_price())
+    format!(
+        "{} — {}\n¥{}",
+        product.release_date().format("%Y %B"),
+        product.maker(),
+        product.min_price()
+    )
 }
 
 impl AmiamiNotifier for AmiamiDiscordNotifier {
