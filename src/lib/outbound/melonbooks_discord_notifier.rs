@@ -1,6 +1,7 @@
 use crate::config::DiscordSettings;
 use crate::domain::melonbooks::models::product::Product;
 use crate::domain::melonbooks::ports::MelonbooksNotifier;
+use async_trait::async_trait;
 use log::error;
 use webhook::client::WebhookClient;
 
@@ -58,14 +59,15 @@ fn product_description(product: &Product) -> String {
     }
 }
 
+#[async_trait]
 impl MelonbooksNotifier for MelonbooksDiscordNotifier {
-    async fn new_products<P: AsRef<Product>>(&self, artist: &str, products: &[P]) {
+    async fn new_products<P: AsRef<Product> + Sync>(&self, artist: &str, products: &[P]) {
         if let Err(e) = self.send_products_notifications(format!("{}: new products available", artist), products).await {
             error!("Unable to send new product notifications: {}", e);
         }
     }
 
-    async fn restocked_products<P: AsRef<Product>>(&self, artist: &str, products: &[P]) {
+    async fn restocked_products<P: AsRef<Product> + Sync>(&self, artist: &str, products: &[P]) {
         if let Err(e) = self.send_products_notifications(format!("{}: products available again", artist), products).await {
             error!("Unable to send restocked product notifications: {}", e);
         }

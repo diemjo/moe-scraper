@@ -5,6 +5,7 @@ use crate::domain::melonbooks::ports::MelonbooksRepository;
 use crate::outbound::sqlite::melonbooks::models::{ArtistRow, ArtistRowInsert, CategoryRow, CategoryRowInsert, FlagRow, FlagRowInsert, ProductRow, ProductRowInsert, SkipProductArtistRowInsert, SkipProductRow, SkipProductRowInsert, TagRow, TagRowInsert, TitleSkipSequenceRow, TitleSkipSequenceRowInsert};
 use crate::outbound::sqlite::{schema, Sqlite};
 use anyhow::Context;
+use async_trait::async_trait;
 use chrono::{DateTime, NaiveDateTime, Utc};
 use diesel::prelude::*;
 use diesel::r2d2::ConnectionManager;
@@ -446,6 +447,7 @@ impl Sqlite {
 }
 
 
+#[async_trait]
 impl MelonbooksRepository for Sqlite {
     async fn follow_melonbooks_artist(&self, args: &ArtistArgs) -> Result<(), FollowArtistError> {
         let mut connection = self.get_connection()?;
@@ -584,7 +586,7 @@ impl MelonbooksRepository for Sqlite {
         Ok(products)
     }
 
-    async fn add_melonbooks_skipping_url<S: AsRef<str>>(&self, url: &str, artists: &[S]) -> Result<(), AddSkippingUrlError> {
+    async fn add_melonbooks_skipping_url<S: AsRef<str> + Sync>(&self, url: &str, artists: &[S]) -> Result<(), AddSkippingUrlError> {
         let mut connection = self.get_connection()?;
         self.add_skip_product(&mut connection, url, artists)?;
         Ok(())

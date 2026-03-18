@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use crate::domain::amiami::ports::AmiamiService;
 use crate::domain::melonbooks::ports::MelonbooksService;
 use crate::inbound::http::handlers::amiami_routes;
@@ -19,10 +20,10 @@ pub struct HttpServerConfig {
     pub assets_dir: Option<PathBuf>
 }
 
-#[derive(Debug, Clone)]
-struct AppState<MS: MelonbooksService, AS: AmiamiService> {
-    melonbooks_service: Arc<MS>,
-    amiami_service: Arc<AS>
+#[derive(Clone)]
+struct AppState {
+    melonbooks_service: Arc<dyn MelonbooksService>,
+    amiami_service: Arc<dyn AmiamiService>
 }
 
 pub struct HttpServer {
@@ -65,20 +66,20 @@ impl HttpServer {
     }
 }
 
-fn melonbooks_routes<MS: MelonbooksService, AS: AmiamiService>() -> axum::Router<AppState<MS, AS>> {
+fn melonbooks_routes() -> axum::Router<AppState> {
     axum::Router::new()
-        .route("/", get(melonbooks_routes::get_overview::<MS, AS>))
-        .route("/artist", post(melonbooks_routes::post_artist::<MS, AS>))
-        .route("/artist/delete", post(melonbooks_routes::delete_artist::<MS, AS>))
-        .route("/title-skip-sequence", post(melonbooks_routes::post_title_skip_sequence::<MS, AS>))
-        .route("/title-skip-sequence/delete", post(melonbooks_routes::delete_title_skip_sequence::<MS, AS>))
+        .route("/", get(melonbooks_routes::get_overview))
+        .route("/artist", post(melonbooks_routes::post_artist))
+        .route("/artist/delete", post(melonbooks_routes::delete_artist))
+        .route("/title-skip-sequence", post(melonbooks_routes::post_title_skip_sequence))
+        .route("/title-skip-sequence/delete", post(melonbooks_routes::delete_title_skip_sequence))
 }
 
-fn amiami_routes<MS: MelonbooksService, AS: AmiamiService>() -> axum::Router<AppState<MS, AS>> {
+fn amiami_routes() -> axum::Router<AppState> {
     axum::Router::new()
-        .route("/", get(amiami_routes::get_overview::<MS, AS>))
+        .route("/", get(amiami_routes::get_overview))
 }
 
-fn api_routes<MS: MelonbooksService, AS: AmiamiService>() -> axum::Router<AppState<MS, AS>> {
-    axum::Router::new().route("/artists", get(melonbooks_routes::get_artists::<MS, AS>))
+fn api_routes() -> axum::Router<AppState> {
+    axum::Router::new().route("/artists", get(melonbooks_routes::get_artists))
 }

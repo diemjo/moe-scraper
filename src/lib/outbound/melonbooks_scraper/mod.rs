@@ -8,6 +8,7 @@ use reqwest::cookie::Jar;
 use reqwest::{Client, Url};
 use select::document::Document;
 use std::sync::Arc;
+use async_trait::async_trait;
 
 mod parser;
 
@@ -86,6 +87,7 @@ impl MelonbooksScraperImpl {
     }
 }
 
+#[async_trait]
 impl MelonbooksScraper for MelonbooksScraperImpl {
     async fn get_potential_product_urls(&self, artist: &str) -> Result<Vec<String>, ScrapeProductsError> {
         self.get_product_urls(artist).await
