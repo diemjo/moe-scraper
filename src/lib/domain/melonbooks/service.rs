@@ -4,6 +4,7 @@ use crate::domain::melonbooks::models::product::{AddTitleSkipSequenceError, Crea
 use crate::domain::melonbooks::ports::{MelonbooksNotifier, MelonbooksRepository, MelonbooksScraper, MelonbooksService};
 use log::info;
 use std::collections::BTreeSet;
+use async_trait::async_trait;
 
 #[derive(Debug, Clone)]
 pub struct MelonbooksServiceImpl<R, N, S>
@@ -28,6 +29,7 @@ where
     }
 }
 
+#[async_trait]
 impl<R, N, S> MelonbooksService for MelonbooksServiceImpl<R, N, S>
 where
     R: MelonbooksRepository,

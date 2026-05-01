@@ -1,8 +1,8 @@
 use crate::config::DiscordSettings;
 use crate::domain::amiami::models::product::Product;
 use crate::domain::amiami::ports::AmiamiNotifier;
+use async_trait::async_trait;
 use log::error;
-use std::fmt::format;
 use webhook::client::WebhookClient;
 
 const DISCORD_URL: &str = "https://discord.com/api/webhooks/";
@@ -61,14 +61,15 @@ fn product_description(product: &Product) -> String {
     )
 }
 
+#[async_trait]
 impl AmiamiNotifier for AmiamiDiscordNotifier {
-    async fn new_products<P: AsRef<Product>>(&self, category: &str, products: &[P]) {
+    async fn new_products<P: AsRef<Product> + Sync>(&self, category: &str, products: &[P]) {
         if let Err(e) = self.send_products_notifications(&format!("Category {}: new products available", category), products).await {
             error!("Unable to send new product notifications: {}", e);
         }
     }
 
-    async fn restocked_products<P: AsRef<Product>>(&self, category: &str, products: &[P]) {
+    async fn restocked_products<P: AsRef<Product> + Sync>(&self, category: &str, products: &[P]) {
         if let Err(e) = self.send_products_notifications(&format!("Category {}: products available again", category), products).await {
             error!("Unable to send restocked product notifications: {}", e);
         }

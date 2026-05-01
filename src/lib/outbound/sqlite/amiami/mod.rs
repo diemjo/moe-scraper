@@ -5,6 +5,7 @@ use crate::outbound::sqlite::schema::amiami_category::dsl as category_dsl;
 use crate::outbound::sqlite::schema::amiami_product::dsl as product_dsl;
 use crate::outbound::sqlite::Sqlite;
 use anyhow::Context;
+use async_trait::async_trait;
 use diesel::prelude::*;
 use diesel::r2d2::ConnectionManager;
 use r2d2::PooledConnection;
@@ -161,6 +162,7 @@ impl Sqlite {
     }
 }
 
+#[async_trait]
 impl AmiamiRepository for Sqlite {
 
     async fn create_amiami_product(&self, args: &CreateProductArgs) -> Result<Product, CreateProductError> {

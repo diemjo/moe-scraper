@@ -2,6 +2,7 @@ use crate::domain::amiami::models::product::{CreateProductArgs, GetProductsError
 use crate::domain::amiami::ports::{AmiamiNotifier, AmiamiRepository, AmiamiScraper, AmiamiService};
 use log::info;
 use std::collections::BTreeSet;
+use async_trait::async_trait;
 
 #[derive(Debug, Clone)]
 pub struct AmiamiServiceImpl<R, N, S>
@@ -26,6 +27,7 @@ where
     }
 }
 
+#[async_trait]
 impl<R, N, S> AmiamiService for AmiamiServiceImpl<R, N, S>
 where
     R: AmiamiRepository,

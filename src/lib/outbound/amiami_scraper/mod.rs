@@ -2,11 +2,11 @@ use crate::domain::amiami::models::product::{ProductData, ScrapeProductsError};
 use crate::domain::amiami::ports::AmiamiScraper;
 use crate::outbound::amiami_scraper::parser::parse_product_list;
 use anyhow::Context;
+use async_trait::async_trait;
 use log::info;
 use reqwest::header::HeaderMap;
 use reqwest::Client;
 use serde_json::Value;
-use std::future::Future;
 
 const USER_KEY: &str = "X-User-Key";
 const USER_KEY_VALUE: &str = "amiami_dev";
@@ -72,9 +72,10 @@ impl AmiamiScraperImpl {
     }
 }
 
+#[async_trait]
 impl AmiamiScraper for AmiamiScraperImpl {
-    fn get_products(&self, category: &str) -> impl Future<Output=Result<Vec<ProductData>, ScrapeProductsError>> + Send {
-        self.get_products(category)
+    async fn get_products(&self, category: &str) -> Result<Vec<ProductData>, ScrapeProductsError> {
+        self.get_products(category).await
     }
 }
 
