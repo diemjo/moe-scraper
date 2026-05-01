@@ -11,7 +11,7 @@ use serde_json::Value;
 const USER_KEY: &str = "X-User-Key";
 const USER_KEY_VALUE: &str = "amiami_dev";
 const USER_AGENT: &str = "User-Agent";
-const USER_AGENT_VALUE: &str = "Mozilla/5.0";
+const USER_AGENT_VALUE: &str = "Mozilla/5.0 (X11; Linux x86_64; rv:144.0) Gecko/20100101 Firefox/144.0";
 const BISHOUJO_CATEGORY: &str = "459";
 const MATURE_CATEGORY: &str = "9708";
 const PRODUCT_LIST_URL: &str = "https://api.amiami.com/api/v1.0/items?pagemax=50&pagecnt={page}&lang=eng&age_confirm=1&s_cate2={category}&s_st_list_preorder_available=1&s_st_list_backorder_available=1&s_st_list_newitem_available=1&s_st_condition_flg=1&s_sortkey=regtimed";
@@ -30,9 +30,9 @@ impl AmiamiScraperImpl {
     pub fn new() -> Result<Self, anyhow::Error> {
         let mut header_map = HeaderMap::new();
         header_map.insert(USER_KEY, USER_KEY_VALUE.parse()?);
-        header_map.insert(USER_AGENT, USER_AGENT_VALUE.parse()?);
         let client = Client::builder()
             .default_headers(header_map)
+            .user_agent(USER_AGENT_VALUE)
             .build()
             .context("Failed to build AmiamiScraperImpl client")?;
         Ok(AmiamiScraperImpl { client })
